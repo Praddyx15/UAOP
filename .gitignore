@@ -1,0 +1,30 @@
+# Local AI/tooling state — never commit
+.claude/
+.code-review-graph/
+.mcp.json
+.opencode.json
+
+# Build outputs
+build/
+out/
+cmake-build-*/
+CMakeLists.txt.user
+dist/
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+
+# Generated code (regenerated from api/proto/ at build time)
+*.pb.h
+*.pb.cc
+*_pb2.py
+*_pb2_grpc.py
+
+# External reference material — reference-only, never committed (REPOSITORY_STRUCTURE.md rule 5)
+external-resources/*
+!external-resources/README.md
+
+# OS noise
+.DS_Store
+Thumbs.db

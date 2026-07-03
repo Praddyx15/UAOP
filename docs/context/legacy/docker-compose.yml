@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  ros2_core:
+    build: .
+    container_name: uaop_ros2_core
+    network_mode: "host"
+    environment:
+      - ROS_DOMAIN_ID=0
+    volumes:
+      - ./ros2_ws:/uaop_workspace/ros2_ws
+      - ./middleware:/uaop_workspace/middleware
+      - ./tools:/uaop_workspace/tools
+    command: /bin/bash -c "source /opt/ros/humble/setup.bash && if [ -f /uaop_workspace/ros2_ws/install/setup.bash ]; then source /uaop_workspace/ros2_ws/install/setup.bash; fi && ros2 launch rosbridge_server rosbridge_websocket_launch.xml port:=9090"
+    restart: unless-stopped
+
+  sitl_simulation:
+    build: .
+    container_name: uaop_sitl_sim
+    network_mode: "host"
+    volumes:
+      - ./autopilot:/uaop_workspace/autopilot
+      - ./simulation:/uaop_workspace/simulation
+    # Command left as interactive bash to easily start ArduPilot/PX4 instances
+    command: tail -f /dev/null
+    depends_on:
+      - ros2_core
+    profiles:
+      - sim
