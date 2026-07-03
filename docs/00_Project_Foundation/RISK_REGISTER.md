@@ -1,0 +1,27 @@
+# RISK_REGISTER
+
+**Version 0.1.0 · 2026-07-03 · Reviewed at every phase gate; owner is Founder unless noted. Scoring: Likelihood × Impact (1–5 each).**
+
+| ID | Risk | L | I | Score | Mitigation | Trigger/Review |
+|---|---|---|---|---|---|---|
+| **R-1** | **Scope gravity** — the 24-panel, 13-service vision pulls Phase 1 into building everything at once; platform dies half-built | 4 | 5 | 20 | Phase gates are law (ROADMAP.md); MISSION.md "say no" list; DECISIONS.md waiver process makes scope creep visible in writing | Any panel/service started outside phase scope |
+| **R-2** | Edge resource budget unrealistic — full stack + 1000 Hz + k3s exceeds Jetson-class hardware | 3 | 4 | 12 | Budget table enforced as k8s limits from first edge deploy; Phase 1 ingest benchmark on ARM64 *early* (CI nightly native ARM); fallback: RC-2 x86 as primary reference, Jetson as constrained profile | Benchmark misses by >25% |
+| **R-3** | Certification-readiness cost balloons — DO-178C-aligned artifacts consume engineering capacity without near-term buyer | 3 | 4 | 12 | Automation-first (RTM generated, gates in CI — marginal cost near zero); DAL-tiering confines rigor to flight-influencing paths; external consultant review deferred to Phase 4 | Traceability work >15% of phase effort |
+| **R-4** | **Solo-founder bandwidth** — AI-first development still needs one human to review, validate, decide, and job-hunt simultaneously | 5 | 4 | 20 | Ruthless phase scope; validation automation; honest ROADMAP durations; treat FlightMD as the short-cycle win keeping momentum/credibility while UAOP matures | Two consecutive months without a gate-ward milestone |
+| **R-5** | AI-generated code drift — subtle architecture violations accumulate faster than one reviewer catches | 4 | 4 | 16 | CI drift gates (dependency-graph diff, annotation lint — CI_CD.md §5); hexagonal service template constrains generation; VALIDATION.md layer 2 hunts drift explicitly | Drift gate firing >1/week |
+| **R-6** | LSTM anomaly tier underperforms (normal-data scarcity) and discredits the AI story | 3 | 3 | 9 | Deterministic analyzers lead (explainable, tested); LSTM ships flagged experimental with published precision/recall; FlightMD user base grows the corpus (ADR-0014) | Precision <70% on validation set at Phase 2 gate |
+| **R-7** | Competitor response — Auterion/QGC ecosystem closes the integration gap before Phase 4 | 2 | 4 | 8 | Moat is compliance-by-design + air-gap + ROS depth (VISION.md) — structurally expensive for cloud-native incumbents; monitor quarterly (COMPETITOR_ANALYSIS.md refresh) | Competitor ships audit-chain or air-gap-first offering |
+| **R-8** | **AirSim successor instability** — constitution names AirSim; upstream archived (Colosseum fork community-run, Project AirSim commercial/uncertain) | 4 | 2 | 8 | Already contained: optional adapter, never load-bearing (SIMULATION_ARCHITECTURE.md §2); Gazebo is the committed physics path | Phase 3 planning re-evaluates the photorealistic-sim need |
+| **R-9** | ROS 2 Humble EOL (May 2027) lands mid-project | 5 | 2 | 10 | Bridge isolation confines the migration (ROS2_INTEGRATION.md §1); schedule Jazzy build-profile spike in Phase 3; support both during transition | Phase 3 start |
+| **R-10** | Gazebo Harmonic / ros_gz / PX4 SITL version-matrix friction (ADR-0003 consequence) | 3 | 2 | 6 | Pin the full matrix in CI containers; matrix documented in integrations/px4; spike at Phase 3 open | SITL container build failures |
+| **R-11** | Map stack spike fails — MapLibre Native + offline tiles on Qt underdelivers (OQ-3) | 2 | 3 | 6 | `MapConfig` abstraction means fallback (MBTiles server-local, or Qt Location tile provider) changes one adapter; 2-day timeboxed spike early in Phase 1 | Spike result |
+| **R-12** | Single-founder company risk at commercial stage — Phase 4 buyers (defense, enterprise) require organizational depth | 4 | 4 | 16 | Out-of-scope for engineering docs but recorded honestly: Phase 4 exit criteria include a design partner, which forces the company-building conversation; documentation depth (this set) is deliberate bus-factor insurance | First serious procurement conversation |
+| **R-13** | Upstream protocol churn (MAVLink dialect changes, PX4 message deprecations) breaks supported-firmware claims | 3 | 2 | 6 | Pinned message definitions per release; supported-matrix policy (MAVLINK_INTEGRATION.md §2) makes claims explicit; nightly SITL matrix catches drift | Matrix red on firmware update |
+| **R-14** | Windows GCS parity lags (services are Linux-first; GCS must be first-class on Windows field laptops) | 3 | 3 | 9 | GCS CI builds+smokes on Windows from Phase 1; Qt is the right tool for this — keep platform-specific code in one adapter layer | Windows smoke failures accumulating |
+| **R-15** | dji/fpv scope ambiguity (OQ-1) quietly grows into unplanned work | 3 | 3 | 9 | Directories frozen by MICROSERVICES.md; any commit touching them without an ADR fails review policy | OQ-1 decision at Phase 2 planning |
+
+## Retired / accepted
+
+- **Custom map renderer dead end** — retired by ADR-0008.
+- **UI stack conflict** — retired by ADR-0002.
+- **MAVLink-over-RF unsigned** — accepted with monitoring (SECURITY.md §9), revisit per customer link hardware.
