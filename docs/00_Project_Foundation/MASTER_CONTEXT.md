@@ -137,7 +137,7 @@ Integration contract: `FlightMDReport` schema **v1.5** (corrected from the origi
 
 ## 11. AI-assisted development workflow
 
-Code is generated AI-first (Claude for architecture/code/QML; agent tooling for integration/dependency work). Every generated change is bound by this document, CODING_STANDARDS.md, and the phase scope in ROADMAP.md. A `progress.md` per phase records installation progress, dependency issues, integration status, review findings, benchmarks, and remaining work.
+Development is founder-led, with AI tooling used to accelerate drafting, review, and documentation where it helps. Every change — however drafted — is bound by this document, CODING_STANDARDS.md, and the phase scope in ROADMAP.md, and passes the same review and CI gates. A `progress.md` per phase records installation progress, dependency issues, integration status, review findings, benchmarks, and remaining work.
 
 ## 12. Open questions (OQ) — explicitly unresolved, do not assume
 

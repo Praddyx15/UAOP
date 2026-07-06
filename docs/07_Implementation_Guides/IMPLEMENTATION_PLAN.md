@@ -20,14 +20,14 @@
 ## 1. Working method (applies to every milestone — unchanged from v0.1.0)
 
 1. **Document → contract → code → test → review → gate.** No service is coded before its MICROSERVICES.md entry and `.proto` contract exist; no milestone closes without its listed proof.
-2. **AI-first generation, human-gated integration.** Claude generates against the doc set; every merge passes the full CI gate chain (MISRA, `@req` lint, contract check, SITL smoke). The pipeline, not the generator, is the trust boundary (CI_CD.md §5).
+2. **Tool-accelerated drafting, human-gated integration.** Code is written against the doc set (with AI assistance where it speeds things up); every merge passes the full CI gate chain (MISRA, `@req` lint, contract check, SITL smoke). The pipeline, not the drafting method, is the trust boundary (CI_CD.md §5).
 3. **Critical review after every deliverable** — the seven-lens review (DOCUMENTATION_PROCESS.md §4) applies to code milestones exactly as to documents; findings land in DECISIONS.md's Review Log.
 4. **`docs/context/phase-N/progress.md`** updated at every working session: installation progress, dependency issues, integration status, review findings, benchmarks, remaining work.
 5. **Vertical slices over horizontal layers.** Each milestone ends with something that *runs against SITL*, however thin — never three months of libraries with no flying demo.
 
 ## 2. Capacity model and how to read the estimates
 
-**Unit: focus-day** ≈ 4–6 hours of uninterrupted implementation work (solo founder + AI-assisted generation). This is not a calendar day — [RISK_REGISTER R-4](../00_Project_Foundation/RISK_REGISTER.md) already flags that job-hunting and other commitments compete for time. Three cadence scenarios convert focus-days to calendar time; **pick the one matching your actual availability this month, don't assume the aggressive one**:
+**Unit: focus-day** ≈ 4–6 hours of uninterrupted implementation work (solo founder, AI-assisted tooling). This is not a calendar day — [RISK_REGISTER R-4](../00_Project_Foundation/RISK_REGISTER.md) already flags that job-hunting and other commitments compete for time. Three cadence scenarios convert focus-days to calendar time; **pick the one matching your actual availability this month, don't assume the aggressive one**:
 
 | Cadence | Focus-days/week | Phase 1 (115 focus-days) calendar time |
 |---|---|---|

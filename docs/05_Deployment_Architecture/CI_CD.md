@@ -42,9 +42,9 @@ Versioning: platform semver; contracts versioned independently (API_SPECIFICATIO
 | Release | tag | release pipeline |
 | Reference edge (Phase 2+) | manual/nightly | deploy latest to lab RC-2/RC-3 hardware; hardware soak |
 
-## 5. AI-generated code in the pipeline
+## 5. Tool-assisted code in the pipeline
 
-The pipeline is deliberately the **trust boundary for AI-first development**: generated code enjoys zero exemptions, and two gates exist substantially because of it — the architecture-drift check (import/dependency graph diffed against MICROSERVICES.md's declared dependencies; a service acquiring an undeclared dependency fails) and the annotation linter (generated code habitually forgets traceability). This is validation layer 2/3 automation (VALIDATION.md §4) running continuously rather than only at gates.
+The pipeline is deliberately the **trust boundary regardless of how code was drafted** — hand-written, AI-assisted, or ported from a reference implementation, no drafting method enjoys exemptions. Two gates exist substantially because volume-at-speed invites drift: the architecture-drift check (import/dependency graph diffed against MICROSERVICES.md's declared dependencies; a service acquiring an undeclared dependency fails) and the annotation linter (fast-drafted code habitually forgets traceability). This is validation layer 2/3 automation (VALIDATION.md §4) running continuously rather than only at gates.
 
 ## 6. Failure handling & hygiene
 

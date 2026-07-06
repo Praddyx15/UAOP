@@ -1,6 +1,6 @@
 # CODING_STANDARDS
 
-**Version 0.1.0 · 2026-07-03 · Enforced by CI (CI_CD.md), not by exhortation. Applies equally to AI-generated and human code — no exemptions either direction.**
+**Version 0.1.1 · 2026-07-07 · Enforced by CI (CI_CD.md), not by exhortation. Applies to all code identically, whatever tool or method drafted it — no exemptions either direction.**
 
 ## 1. C++ (core services, bridges, GCS backend)
 

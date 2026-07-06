@@ -1,6 +1,6 @@
 # ROADMAP
 
-**Version 0.1.0 · 2026-07-03 · Four phases + Phase 0. Gates are sequential and non-negotiable (MISSION.md: depth over breadth). Durations are effort-shaped estimates for an AI-first solo-founder team; scope, not calendar, defines a phase.**
+**Version 0.1.0 · 2026-07-03 · Four phases + Phase 0. Gates are sequential and non-negotiable (MISSION.md: depth over breadth). Durations are effort-shaped estimates for a solo founder working with AI-assisted tooling; scope, not calendar, defines a phase.**
 
 ---
 

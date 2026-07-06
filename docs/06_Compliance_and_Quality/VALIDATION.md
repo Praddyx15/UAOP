@@ -35,9 +35,9 @@ Run at every gate, expanded per phase:
 | **Soak** | 24 h simulated ops: zero JetStream-persisted loss, memory-flat, gap accounting exact (UAOP-NFR-005) |
 | **Performance** | Latency budget verification per DATA_FLOW.md §3; 1000 Hz ingest benchmark; cold-start ≤ 120 s |
 
-## 4. Validation responsibilities under AI-first development
+## 4. Validation responsibilities under tool-accelerated development
 
-Because code is AI-generated (MASTER_CONTEXT.md §11), validation carries extra weight and specific counter-measures: generated code merges only through the same review + static-analysis + trace gates as human code (no "the agent said it passes"); each phase's `progress.md` records integration status and review findings honestly; architecture-layer validation specifically hunts for **drift** (generated helpers that bypass documented seams — e.g., a service quietly opening another's DB) because that is the characteristic failure mode of AI-generated code at scale.
+Because code volume can grow quickly when drafting is tool-accelerated (MASTER_CONTEXT.md §11), validation carries extra weight and specific counter-measures: all code merges only through the same review + static-analysis + trace gates regardless of how it was drafted (no "the tool said it passes"); each phase's `progress.md` records integration status and review findings honestly; architecture-layer validation specifically hunts for **drift** (helpers that bypass documented seams — e.g., a service quietly opening another's DB) because that is the characteristic failure mode of fast-drafted code at scale.
 
 ## 5. Hardware validation (Phases 2–3 onward)
 
