@@ -1,0 +1,45 @@
+# Nightly pipeline (CI_CD.md §2/§4). Stubs marked TODO grow at the milestone that
+# gives them substance — the job exists from M0 so wiring is never a retrofit.
+name: nightly
+
+on:
+  schedule:
+    - cron: "30 21 * * *" # 03:00 IST
+  workflow_dispatch:
+
+jobs:
+  build-sanitizers:
+    name: asan/ubsan build+test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - run: cmake --preset asan
+      - run: cmake --build --preset asan
+      - run: ctest --preset asan
+
+  fuzz:
+    name: fuzz campaign (R3/F21 — corpus seeded at M2.3)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: fuzz placeholder
+        run: |
+          if [ -d middleware/mavlink-bridge/fuzz ]; then
+            echo "TODO(M2.3): build and run libFuzzer harness against corpus"
+            exit 1
+          fi
+          echo "fuzz: no harness yet (arrives M2.3) — stub passes by design"
+
+  sitl-smoke:
+    name: SITL smoke (arrives M2)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: sitl placeholder
+        run: |
+          if [ -d tests/sitl/harness ]; then
+            echo "TODO(M2.9): run SITL smoke suite"
+            exit 1
+          fi
+          echo "sitl: no harness yet (arrives M2.9) — stub passes by design"

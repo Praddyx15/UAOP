@@ -1,0 +1,19 @@
+{
+  "_comment": "UAOP MISRA C++:2023 gate configuration (ADR-0013/0016, COMPLIANCE.md §A.2). Consumed by tools/ci/run_misra.sh via cppcheck --addon. Scope: DAL C-equivalent paths only — see 'paths'. Zero 'critical' findings gate-blocking (UAOP-NFR-008); advisory findings trend-reported.",
+  "script": "misra.py",
+  "args": [
+    "--rule-texts=compliance/tools/misra-config/rule-texts.txt"
+  ],
+  "paths_dal_c_equivalent": [
+    "middleware/mavlink-bridge",
+    "backend/services/vehicle-manager",
+    "backend/services/mission-engine",
+    "backend/services/parameter-engine",
+    "backend/services/remote-id",
+    "backend/services/compliance-engine",
+    "backend/services/common"
+  ],
+  "suppressions": [
+    "_comment: every suppression requires an inline justification comment at the code site and an entry here with rationale — empty at baseline"
+  ]
+}

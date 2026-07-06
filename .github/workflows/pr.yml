@@ -1,0 +1,54 @@
+# PR pipeline (CI_CD.md §1) — gates fail closed. Stages grow with milestones;
+# every stage listed here is real and green from M0 onward.
+name: pr
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  guards:
+    name: guards (frozen dirs, doc links, licenses)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python tools/ci/check_frozen_dirs.py
+      - run: python tools/ci/check_doc_links.py
+      - run: python tools/ci/check_licenses.py
+      - run: python compliance/tools/rtm-generator/rtm_gen.py --check
+
+  build-linux:
+    name: build+test linux x86_64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - run: cmake --preset debug
+      - run: cmake --build --preset debug
+      - run: ctest --preset debug
+
+  build-linux-arm64:
+    name: build+test linux arm64 (UAOP-NFR-007)
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - run: cmake --preset debug
+      - run: cmake --build --preset debug
+      - run: ctest --preset debug
+
+  security-scan:
+    name: trivy fs scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true

@@ -74,3 +74,25 @@ Per MASTER_CONTEXT §11 and DOCUMENTATION_PROCESS §3: updated every working ses
 **Files touched:** DECISIONS.md (v0.1.4 — ADR-0019 + Review R5, F33–F38), IMPLEMENTATION_PLAN.md (v0.2.2 — M0.5/M4.2/M4.4), MAVLINK_INTEGRATION.md (v0.1.1 — reference-implementation note), CLAUDE.md/AGENTS.md (hard rule), external-resources/README.md (rule 5).
 
 **M0 status:** unchanged — policy work only. **Next session:** M0.1–M0.3.
+
+---
+
+## 2026-07-07 — DEVELOPMENT STARTED: M0 mostly complete in one session
+
+**Toolchain discovered on this machine:** CMake 4.3.3, Qt 6.11.1 (mingw_64 kit), MinGW GCC 13.1 + Ninja (C:\Qt\Tools), Docker 29.3.1, Python 3.14 — full local build capability confirmed.
+
+**Done (see IMPLEMENTATION_PLAN.md §M0 status block for detail):**
+- [x] M0.1 CMakePresets.json — configure/build/test presets, sanitizer preset (Linux), gcs-debug preset
+- [x] M0.2 .clang-format / .clang-tidy / compliance/tools/misra-config (with honest MISRA-checker-coverage note)
+- [x] M0.3 `uaop::common` Result<T,E> + Error taxonomy (first `@req:` trace: UAOP-NFR-008) + `tools/service-template/` hexagonal example (link-monitor domain previewing HLR-004 semantics) — **built + 3/3 tests green locally, GCC 13, warnings-as-errors**
+- [x] M0.5 CI: pr.yml (guards → linux x86_64 + arm64 build/test → Trivy), nightly.yml (asan + self-failing fuzz/SITL stubs), 4 guard scripts all green locally, THIRD_PARTY_NOTICES.md seeded
+- [x] M0.8 rtm_gen.py — RTM.md generated (first real trace row), annotation lint enforces known-ID + template-quarantine rules
+- [~] M0.6 compose.yaml (NATS JetStream/TimescaleDB/Redis/MinIO + sitl profile) + setup.sh — `docker compose config` VALID; live `up --wait` pending engine start
+- [ ] M0.4 GCS panel-host framework ← **next session's main item**
+- [ ] M0.7 map spike (OQ-3) — after M0.4
+
+**Firsts:** first compiled UAOP code, first passing tests, first RTM with a real trace, first CI-enforceable guards.
+
+**Calibration note for M2.10:** ~5.5 estimated focus-days of scaffolding landed in one session. AI-assisted authoring compresses file-authoring work heavily; integration/verification work (M1 onward) will not compress at the same ratio — recalibrate at M2.10 with both data points, not just this one.
+
+**Next session:** M0.4 (panel host + migrate 4 prototype views), then M0.7 map spike; M0 DoD check; then M1.1 proto contracts.

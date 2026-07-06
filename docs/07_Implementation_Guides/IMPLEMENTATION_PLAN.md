@@ -97,6 +97,15 @@ Table columns: **ID** · **Task (deliverable folded in)** · **Effort** (focus-d
 | M0.8 | `compliance/tools/rtm-generator` scaffold + `@req` annotation lint wired into CI — **moved up from M7** (R3/F20): traceability is never retrofitted, so the tool that proves it must exist before the first flight-influencing commit (M2), not after the last one | 1.5d | M0.5 | UAOP-NFR-009, COMPLIANCE.md §A.3, ADR-0010 |
 | **M0 total** | | **11.5d** | | |
 
+**M0 status — 2026-07-07 session 1:**
+- ✅ **M0.1** CMakePresets.json (debug/release/asan/gcs-debug, Ninja) · ✅ **M0.2** .clang-format, .clang-tidy, MISRA config skeleton (+ honest note that full MISRA C++:2023 coverage needs a commercial checker — Phase 2 procurement item, see `compliance/tools/misra-config/README.md`).
+- ✅ **M0.3** `uaop::common` (`Result<T,E>` + `Error` taxonomy, `@req: UAOP-NFR-008` traced) + `tools/service-template/` (hexagonal link-monitor example) — **builds clean under GCC 13 `-Wall -Wextra -Wconversion -Werror`, 3/3 ctest green** on Windows/MinGW; Linux x86_64 + ARM64 verification happens on first CI run.
+- ✅ **M0.5** `pr.yml` (guards → build x86_64 + **ARM64** → Trivy) + `nightly.yml` (asan, fuzz/SITL stubs that *fail* if their milestone artifacts exist without wiring); all four guard scripts (`tools/ci/`) **verified green locally**; `THIRD_PARTY_NOTICES.md` seeded with the FlightMD entry.
+- ✅ **M0.8** `rtm_gen.py` generates `docs/compliance/DO-178C/RTM.md` (first trace: UAOP-NFR-008, 3 annotations) and lints: unknown requirement IDs fail, template placeholders (`UAOP-TPL-*`) are quarantined to `tools/service-template/`.
+- 🟡 **M0.6** compose.yaml + setup.sh authored, `docker compose config` valid; live `up --wait` verification pending Docker engine availability.
+- ⬜ **M0.4** GCS panel-host (next session — the remaining big M0 item) · ⬜ **M0.7** map spike (after M0.4).
+- **Estimate calibration signal (feeds M2.10):** M0.1/2/3/5/8 ≈ 5.5 estimated focus-days landed in ~1 session — AI-assisted authoring compresses scaffolding-class work dramatically; do **not** extrapolate to integration-class work (SITL, protocol state machines) where verification, not authoring, dominates.
+
 ### M1 — Contracts and platform plumbing
 
 **DoR:** M0 complete. **DoD:** contract tests green; a synthetic publisher → JetStream → gateway → WebSocket test client round-trip works; duplicate-delivery and gap-detection tests pass.

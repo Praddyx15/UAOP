@@ -1,0 +1,83 @@
+# UAOP workstation profile — core infrastructure (DEPLOYMENT.md §1, ADR-0005/0007).
+# Usage:  docker compose -f infrastructure/docker/compose/compose.yaml up -d
+#         docker compose ... --profile sitl up -d      (adds PX4 SITL)
+# Versions pinned per MASTER_CONTEXT §4. Ports are the API_SPECIFICATION.md defaults.
+
+name: uaop
+
+services:
+  nats:
+    image: nats:2.10-alpine
+    command: ["-js", "-sd", "/data", "-m", "8222"]
+    ports:
+      - "4222:4222"   # client
+      - "8222:8222"   # monitoring
+    volumes:
+      - nats-js:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8222/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  postgres:
+    image: timescale/timescaledb:2.17.2-pg15
+    environment:
+      POSTGRES_USER: uaop
+      POSTGRES_PASSWORD: uaop-dev-only      # workstation profile only; edge uses secrets (SECURITY.md §3)
+      POSTGRES_DB: uaop
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U uaop -d uaop"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  minio:
+    image: minio/minio:RELEASE.2024-12-18T13-15-44Z
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: uaop
+      MINIO_ROOT_PASSWORD: uaop-dev-only
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # console
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # PX4 SITL (headless Gazebo) — profile-gated; the ordinary MAVLink path connects
+  # to udp:14550 (GCS-class) / udp:14540 (offboard). Image per SIMULATION_ARCHITECTURE.md §6.
+  px4-sitl:
+    image: jonasvautherin/px4-gazebo-headless:1.14.3
+    profiles: ["sitl"]
+    environment:
+      PX4_HOME_LAT: "28.4595"    # Gurugram
+      PX4_HOME_LON: "77.0266"
+      PX4_HOME_ALT: "225"
+    ports:
+      - "14550:14550/udp"
+      - "14540:14540/udp"
+
+volumes:
+  nats-js:
+  pg-data:
+  minio-data:

@@ -1,0 +1,27 @@
+# UAOP static-analysis baseline (CODING_STANDARDS.md §1; MISRA checks live in Cppcheck config)
+Checks: >
+  bugprone-*,
+  cert-*,
+  concurrency-*,
+  cppcoreguidelines-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  -modernize-use-trailing-return-type,
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -misc-non-private-member-variables-in-classes
+WarningsAsErrors: >
+  bugprone-use-after-move,
+  bugprone-dangling-handle,
+  cert-err34-c,
+  cppcoreguidelines-slicing,
+  performance-move-const-arg
+HeaderFilterRegex: '(backend|middleware|frontend|tools)/.*\.(h|hpp)$'
+FormatStyle: file
+CheckOptions:
+  readability-function-cognitive-complexity.Threshold: '25'
+  cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor: 'true'

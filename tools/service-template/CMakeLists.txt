@@ -1,0 +1,12 @@
+add_executable(uaop-service-template src/main.cpp)
+target_link_libraries(uaop-service-template PRIVATE uaop::common uaop_warnings)
+target_compile_features(uaop-service-template PRIVATE cxx_std_17)
+
+if(BUILD_TESTING)
+    add_executable(uaop-service-template-tests tests/link_monitor_test.cpp)
+    target_link_libraries(uaop-service-template-tests PRIVATE uaop::common uaop_warnings)
+    target_include_directories(uaop-service-template-tests PRIVATE src)
+    target_compile_features(uaop-service-template-tests PRIVATE cxx_std_17)
+    add_test(NAME template.link_monitor COMMAND uaop-service-template-tests)
+    add_test(NAME template.runs COMMAND uaop-service-template)
+endif()

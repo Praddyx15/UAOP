@@ -1,0 +1,27 @@
+# UAOP formatting — machine-owned, never discussed in review (CODING_STANDARDS.md §1)
+BasedOnStyle: LLVM
+Standard: c++17
+ColumnLimit: 100
+IndentWidth: 4
+AccessModifierOffset: -4
+PointerAlignment: Left
+DerivePointerAlignment: false
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AlwaysBreakTemplateDeclarations: Yes
+BreakBeforeBraces: Attach
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^"'
+    Priority: 1
+  - Regex: '^<uaop/'
+    Priority: 2
+  - Regex: '^<(drogon|trantor|nats|grpc|google)/'
+    Priority: 3
+  - Regex: '^<Q'
+    Priority: 4
+  - Regex: '.*'
+    Priority: 5
+SeparateDefinitionBlocks: Always
+InsertNewlineAtEOF: true
