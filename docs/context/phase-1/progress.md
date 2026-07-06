@@ -96,3 +96,8 @@ Per MASTER_CONTEXT §11 and DOCUMENTATION_PROCESS §3: updated every working ses
 **Calibration note for M2.10:** ~5.5 estimated focus-days of scaffolding landed in one session. AI-assisted authoring compresses file-authoring work heavily; integration/verification work (M1 onward) will not compress at the same ratio — recalibrate at M2.10 with both data points, not just this one.
 
 **Next session:** M0.4 (panel host + migrate 4 prototype views), then M0.7 map spike; M0 DoD check; then M1.1 proto contracts.
+
+**Post-push addendum (same day):**
+- First cloud CI run failed on `aquasecurity/trivy-action@0.28.0` — their tags moved to a `v` prefix. Fixed by **SHA-pinning all actions** (`66ce154`), which CI_CD.md §6 had required all along; the original workflow violated our own supply-chain rule. Lesson logged: the rule existed, enforcement (a reviewer eye on `uses:` lines) did not — self-caught within one run.
+- **Run 28813987888 fully green: guards ✅ · linux x86_64 build+test ✅ · linux ARM64 build+test ✅ · trivy ✅.** UAOP-NFR-007 (one pipeline, both architectures) is now continuously verified — the code that passed on Windows/MinGW passes on both Linux arches untouched.
+- M0.6 live-up remains blocked locally: Docker Desktop engine did not come up after 7+ min of polling — likely waiting on a first-run GUI dialog (license/WSL2 prompt). **Founder action: open Docker Desktop once, accept any prompt**, then `bash tools/setup.sh` (Git Bash) or `docker compose -f infrastructure/docker/compose/compose.yaml up -d --wait` completes M0.6.
