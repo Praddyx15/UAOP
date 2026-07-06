@@ -12,7 +12,7 @@ jobs:
     name: asan/ubsan build+test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - run: sudo apt-get update && sudo apt-get install -y ninja-build
       - run: cmake --preset asan
       - run: cmake --build --preset asan
@@ -22,7 +22,7 @@ jobs:
     name: fuzz campaign (R3/F21 — corpus seeded at M2.3)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: fuzz placeholder
         run: |
           if [ -d middleware/mavlink-bridge/fuzz ]; then
@@ -35,7 +35,7 @@ jobs:
     name: SITL smoke (arrives M2)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: sitl placeholder
         run: |
           if [ -d tests/sitl/harness ]; then
