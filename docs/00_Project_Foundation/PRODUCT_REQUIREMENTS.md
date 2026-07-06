@@ -36,7 +36,7 @@ Requirement convention (feeds the RTM): `UAOP-HLR-nnn` high-level requirements b
 
 ### Telemetry, logging, analysis
 - **UAOP-HLR-030 (T)** All telemetry SHALL be persisted to TimescaleDB at full received rate (design ceiling 1000 Hz IMU) and streamed to UI consumers over WebSocket at configurable rates.
-- **UAOP-HLR-031 (T)** The platform SHALL import and analyse PX4 ULog and ArduPilot DataFlash logs via the 7-module analyser suite (oscillation, vibration, EKF, battery, GPS, parameter anomaly, motor/ESC) producing scored findings with plain-language explanations.
+- **UAOP-HLR-031 (T)** The platform SHALL import and analyse PX4 ULog, ArduPilot DataFlash, and MAVLink telemetry logs via the 7-module weighted analyser suite (oscillation, vibration, EKF, battery, GPS, parameter anomaly, motor/ESC) producing scored findings with plain-language explanations. *(Corrected 2026-07-07, Review R4: format list extended to match the real `flightmd_core` dependency.)* The deterministic analysis and plain-language explanation generation SHALL function with **zero network calls** in the default configuration (UAOP-NFR-001); any AI-based prose enhancement is optional, off by default, and requires explicit per-organisation opt-in when the node has connectivity.
 - **UAOP-HLR-032 (A)** Flight logs SHALL be hash-chained at capture for tamper evidence.
 
 ### Remote ID & compliance

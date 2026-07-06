@@ -23,3 +23,54 @@ Per MASTER_CONTEXT §11 and DOCUMENTATION_PROCESS §3: updated every working ses
 **Blockers / founder decisions pending:** OQ-1 (dji/fpv scope — Phase 2 planning), OQ-3 spike result.
 
 **Benchmarks:** none yet (first: 1000 Hz ingest rig lands with M2).
+
+---
+
+## 2026-07-06 — IMPLEMENTATION_PLAN.md expanded to a task-level WBS (v0.2.0)
+
+**Done:**
+- IMPLEMENTATION_PLAN.md rewritten with full work breakdown structure: every M0–M7 milestone broken into IDed tasks with effort estimates (focus-days), dependencies, and requirement/ADR/risk traces. Phase 1 total: **115 focus-days**, with three calendar scenarios (aggressive 5.3mo / sustainable 8.8mo / conservative 13.3mo — pick the one matching actual availability).
+- Illustrative Gantt chart added (aggressive-cadence only, explicitly flagged for recalibration).
+- Review R3 (5 findings, F20–F25) in DECISIONS.md: RTM-generator scaffolding moved from M7 to **M0.8** (traceability tooling must predate the first annotated commit, not follow it); continuous fuzzing wired into CI from **M0.5** instead of a one-off M7 review; a mandatory recalibration checkpoint added at **M2.10** (first real effort data point); solo-founder critical-path risk (R-4) mitigated with an explicit bench-task list (§2); frozen-directory CI guard scheduled at **M0.5** with a re-check at **M5.7**; SITL validation coverage distributed across M2/M3/M4/M5 instead of backloaded to a single M7 push.
+- §8 added: the repeatable per-milestone execution loop (DoR check → load WBS into TaskCreate → generate against docs → seven-lens review → update progress.md → DoD check).
+
+**M0 remaining — now with task IDs (see IMPLEMENTATION_PLAN.md §5):**
+- [ ] M0.1 CMakePresets.json
+- [ ] M0.2 clang-format/clang-tidy/MISRA config
+- [ ] M0.3 services/common + hello-service template
+- [ ] M0.4 GCS panel-host framework + migrate prototype views
+- [ ] M0.5 CI shell + frozen-dir guard + nightly fuzz stub + doc-link checkers
+- [ ] M0.6 setup.sh v0
+- [ ] M0.7 OQ-3 map spike
+- [ ] M0.8 rtm-generator scaffold + @req lint
+
+**Next session:** start M0.1–M0.3, per IMPLEMENTATION_PLAN.md §9.
+
+---
+
+## 2026-07-07 — FlightMD real-project inspection; assets imported; docs corrected (ADR-0018, Review R4)
+
+**Done:**
+- Inspected `C:\Users\akass\Downloads\flightmd` — FlightMD is not a plan, it's a real, live, MIT-licensed product (github.com/Praddyx15/FlightMD, deployed at flightmd.vercel.app/flightmd-api.onrender.com), materially ahead of what UAOP's docs assumed: schema v1.5 (not v1.0), 3 log formats incl. MAVLink `.tlog` (not 2), 8 analyzers incl. an unweighted ascent/recovery module, AI-optional with **Groq default** (not Claude-mandatory), validated against 50 real-world logs across 11 vehicle types.
+- **Imported** (small, MIT, same author — no licensing question): `tests/data/sample_logs/` (6 clean/flawed fixture logs across `.ulg`/`.bin`/`.tlog` + generator script, ~1.5 MB) and `backend/services/parameter-engine/data/` (PX4 v1.13/v1.14 param defaults + safe-range JSON, ~7 KB). Both have provenance READMEs.
+- **Deliberately not imported:** `flightmd_core` source/API/frontend (stays a pinned dependency per ADR-0001/REPOSITORY_STRUCTURE §2 rule 1, never vendored); the 8.5 GB real-world validation corpus (no Git LFS yet — recorded as a bench-task candidate, not a silent multi-GB commit).
+- **ADR-0018** + **Review R4** (7 findings, F26–F32) in DECISIONS.md: AI-enhancement now structurally off-by-default in UAOP's integration (strengthens air-gap posture — this was a correction *toward* better security, not a new risk); `ASCENT_PROFILE` category filtered at the integration boundary; explicit boundary rule that UAOP never consumes FlightMD's own fleet-ops features; RISK_REGISTER R-6 narrowed to the UAOP-native LSTM tier only.
+- Corrected: AI_ENGINE.md (v0.1.1), MASTER_CONTEXT.md §10, PRODUCT_REQUIREMENTS.md (UAOP-HLR-031 offline-by-default clause), RISK_REGISTER.md R-6, PROJECT_STRUCTURE.md (v0.1.2), TESTING.md (v0.1.1). IMPLEMENTATION_PLAN.md → v0.2.1: M2.3 gains tlog-replay fixtures, M4.4 marked de-risked, Phase 2/M9 forward-note added, bench-task list gains the LFS+corpus option.
+
+**M0 status:** unchanged from 2026-07-06 — no M0 tasks executed this session, only the FlightMD inspection/import/doc-correction work above.
+
+**Next session:** still start M0.1–M0.3, per IMPLEMENTATION_PLAN.md §9. When M9 (Phase 2 ai-engine) is eventually detailed, start from AI_ENGINE.md §2.1/§6 and ADR-0018 directly — the integration contract is now accurate, not aspirational.
+
+---
+
+## 2026-07-07 (later) — Upstream code-reuse policy decided (ADR-0019, Review R5)
+
+**Trigger:** founder proposal to accelerate development by taking and refining code from ArduPilot, Mission Planner, QGroundControl, PX4-Autopilot, PX4-ECL.
+
+**Decision (licenses verified against live repos):** three tiers. **PX4-Autopilot (BSD-3)** = port freely with provenance headers + THIRD_PARTY_NOTICES entries. **QGC (dual Apache-2.0/GPL-3.0)** = port under the Apache option with per-file verification — its MissionManager/ParameterManager state machines become the reference implementations for M4.2/M4.4 protocol code, ported into our Result<T,E> idiom. **ArduPilot + Mission Planner (GPL-3.0) = never in-tree in any form** — a single "refined" GPL function would relicense UAOP's distribution, deciding OQ-4 by accident and foreclosing Phase 4 closed components; they remain behavioral references (quirk tables, tuning benchmarks), study-only in external-resources/.
+
+**Also caught:** PX4-ECL is archived (May 2024) — EKF2 lives in PX4-Autopilot mainline; source from there. New prompt-hygiene hard rule in CLAUDE.md/AGENTS.md: never paste GPL source into a code-generation prompt. M0.5 gains an in-PR license-allowlist gate + GPL-text denylist (release-time-only auditing would catch contamination months late).
+
+**Files touched:** DECISIONS.md (v0.1.4 — ADR-0019 + Review R5, F33–F38), IMPLEMENTATION_PLAN.md (v0.2.2 — M0.5/M4.2/M4.4), MAVLINK_INTEGRATION.md (v0.1.1 — reference-implementation note), CLAUDE.md/AGENTS.md (hard rule), external-resources/README.md (rule 5).
+
+**M0 status:** unchanged — policy work only. **Next session:** M0.1–M0.3.

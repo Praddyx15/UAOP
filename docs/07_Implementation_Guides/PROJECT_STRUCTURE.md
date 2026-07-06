@@ -1,6 +1,8 @@
 # PROJECT_STRUCTURE
 
-**Version 0.1.1 · 2026-07-04 · The final, implementation-ready repository blueprint. Ownership rules and monorepo rationale: [REPOSITORY_STRUCTURE.md](../08_Developer_Handbook/REPOSITORY_STRUCTURE.md). ⊕ *directories* were created in the 2026-07-04 structure pass (review R2); ⊕ *files* (CMake presets, workflows, proto files, configs) land with milestone M0 code. ⚠ = frozen pending OQ-1.**
+**Version 0.1.2 · 2026-07-07 · The final, implementation-ready repository blueprint. Ownership rules and monorepo rationale: [REPOSITORY_STRUCTURE.md](../08_Developer_Handbook/REPOSITORY_STRUCTURE.md). ⊕ *directories* were created in the 2026-07-04 structure pass (review R2); ⊕ *files* (CMake presets, workflows, proto files, configs) land with milestone M0 code. ⚠ = frozen pending OQ-1.**
+
+**Changelog:** v0.1.2 records two directories populated ahead of schedule from the real FlightMD project (Review R4 / ADR-0018): `backend/services/parameter-engine/data/` (seed metadata) and `tests/data/sample_logs/` (fixture logs) — both below, no longer bare `⊕`.
 
 ## 1. Top-level tree (complete)
 
@@ -26,7 +28,7 @@ uaop-platform/
 │       ├── common/                  ⊕ shared C++ lib (see §3 template note)
 │       ├── telemetry-engine/        (§3 layout)
 │       ├── mission-engine/
-│       ├── parameter-engine/        ⊕
+│       ├── parameter-engine/        ⊕ — `data/` seeded from FlightMD (px4_param_defaults, param_safe_ranges.json; R4/ADR-0018)
 │       ├── vehicle-manager/         ⊕
 │       ├── flight-log-engine/       ⊕
 │       ├── remote-id/
@@ -61,7 +63,7 @@ uaop-platform/
 │   ├── e2e/                         ⊕ golden-path GCS flows
 │   ├── hil/                         ⊕ (Phase 2 bench)
 │   ├── compliance/                  rtm/ · chain/ · annotations/ ⊕
-│   └── data/                        ⊕ LFS: sample logs, MAVLink corpora, goldens
+│   └── data/                        sample_logs/ seeded from FlightMD (6 clean/flawed fixtures + generator, ~1.5MB, no LFS needed yet — R4/ADR-0018); larger corpora/goldens ⊕ LFS when needed
 ├── tools/                           ⊕ setup.sh · build-all.sh · uaop-node/ (ops CLI source)
 ├── docs/                            00_…08_ numbered living design system (this set)
 │   ├── 00_Project_Foundation/ … 08_Developer_Handbook/

@@ -17,6 +17,7 @@ UAOP (Unified Autonomy Operating Platform) by Sixty Motion Aerospace: an operati
 - **Frozen directories**: `backend/services/dji-service/` and `backend/services/fpv-service/` are FROZEN pending OQ-1 — no code, contracts, or references.
 - **Safety/compliance invariants**: AI output is advisory-only (ADR-0012); flight-influencing C++ follows MISRA C++:2023 with `@req:` traceability annotations, no exceptions/dynamic allocation on real-time paths (ADR-0013); commands require durable audit-event persistence (ADR-0015); air-gap operation is permanent — no Phase 1–3 cloud/SaaS dependencies.
 - **Phase discipline**: work only inside the current milestone's scope (IMPLEMENTATION_PLAN.md). Scope creep is refused, not accommodated.
+- **Upstream code reuse is license-tiered (ADR-0019)**: PX4-Autopilot (BSD) and QGroundControl (Apache option, per-file verified) code may be *ported* with provenance headers + `THIRD_PARTY_NOTICES.md` entries; **ArduPilot and Mission Planner are GPLv3 — their code never enters this tree in any form, and their source is never pasted into a code-generation prompt** ("refine this for our codebase" produces a GPL derivative). They are behavioral references only: describe the observed behavior, implement fresh.
 
 ## Build (current prototype GCS — the only buildable code yet)
 

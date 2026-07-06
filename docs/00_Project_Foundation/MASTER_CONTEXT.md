@@ -131,7 +131,9 @@ uaop.audit.v1                                 # hash-chained audit stream (JetSt
 
 ## 10. Related project: FlightMD
 
-FlightMD (separate repo, `flightmd_core` pip package) is the ULog/DataFlash analyser whose analysis modules become ~30% of UAOP's ai-engine. Integration contract: `FlightMDReport` schema v1.0; Mode A (package import, offline, air-gap-safe) is the default inside UAOP; Mode B (API call) optional. `flightmd_core` must never grow web dependencies.
+FlightMD ([github.com/Praddyx15/FlightMD](https://github.com/Praddyx15/FlightMD), MIT, separate repo — same author) is a **real, live, independently shipped product** (flightmd.vercel.app / flightmd-api.onrender.com), not a hypothetical. Its `flightmd_core` pip package is a fully deterministic (zero ML) rule-based flight-log analyser — PX4 ULog, ArduPilot `.bin`, and MAVLink `.tlog`, auto-detected — validated against 50 real-world logs across 11 vehicle types. It becomes ~30% of UAOP's ai-engine (AI_ENGINE.md §2.1).
+
+Integration contract: `FlightMDReport` schema **v1.5** (corrected from the originally assumed v1.0 — the schema evolves independently of UAOP and every integration checks this field). Mode A (package import, offline, air-gap-safe, **no `AIEnhancer` passed by default**) is the default inside UAOP; Mode B (API call) is not used by UAOP. `flightmd_core` must never grow web dependencies. **UAOP imports only `flightmd_core`** — FlightMD's own web API, frontend, and fleet-operations features (maintenance tracking, webhooks, trends) are out of scope for UAOP and remain FlightMD's own product surface; see ADR-0018.
 
 ## 11. AI-assisted development workflow
 

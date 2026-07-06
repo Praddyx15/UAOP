@@ -1,10 +1,12 @@
 # MAVLINK_INTEGRATION
 
-**Version 0.1.0 · 2026-07-03 · How UAOP speaks to PX4 and ArduPilot. Owner service: mavlink-bridge (MICROSERVICES.md).**
+**Version 0.1.1 · 2026-07-07 · How UAOP speaks to PX4 and ArduPilot. Owner service: mavlink-bridge (MICROSERVICES.md).**
 
 ## 1. Scope and stance
 
 MAVLink v2 is the only vehicle control/telemetry protocol in Phases 1–3. UAOP is a **GCS-class MAVLink peer** (its own system ID, component `MAV_COMP_ID_MISSIONPLANNER-`class): it commands and observes; it never emulates an autopilot component. Library: upstream `pymavlink`-generated C headers / `MAVSDK` evaluation rejected — we need message-level control for the bridge's zero-copy path and dialect handling; we consume upstream **message definitions (XML)** and generate our parser tables at build time, pinning the definitions per release.
+
+**Reference implementations (ADR-0019):** the transactional protocols in §3 are not designed from the spec alone. QGroundControl's `MissionManager`/`ParameterManager` state machines (Apache-2.0 option, per-file verified) are the portable reference — their retry/timeout/quirk handling is ported into our `Result<T,E>` idiom with provenance recorded. ArduPilot and Mission Planner source (GPLv3) is **behavioral reference only**: quirks observed there are documented as facts in the §2 tables and implemented fresh, never transcribed.
 
 ## 2. Dialects and the two-autopilot problem
 

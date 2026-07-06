@@ -1,6 +1,6 @@
 # TESTING
 
-**Version 0.1.0 · 2026-07-03 · How tests are built and executed. What must be proven per phase: VALIDATION.md. Pipeline wiring: CI_CD.md.**
+**Version 0.1.1 · 2026-07-07 · How tests are built and executed. What must be proven per phase: VALIDATION.md. Pipeline wiring: CI_CD.md.**
 
 ## 1. Test pyramid (per repository area `tests/`)
 
@@ -20,7 +20,7 @@
 2. **Determinism:** flaky tests are quarantined within 24 h and fixed or deleted; SITL tests use lockstep and seeded scenarios; wall-clock sleeps are banned in favor of condition waits.
 3. **Idempotency tests are first-class:** every NATS consumer gets a duplicate-delivery test and an out-of-order test (at-least-once semantics are only safe if actually tested).
 4. **Absence testing:** proto3 optional discipline (TELEMETRY_ENGINE.md §2) is tested — a missing field must render as absent through the whole pipeline, never as zero.
-5. **Test data is versioned:** sample logs (ULog/DataFlash including corrupt/truncated/short-flight edge cases mirroring FlightMD's hardened set), MAVLink corpora, and golden outputs live in-repo (LFS) with provenance notes.
+5. **Test data is versioned:** sample logs (ULog/DataFlash including corrupt/truncated/short-flight edge cases mirroring FlightMD's hardened set), MAVLink corpora, and golden outputs live in-repo (LFS) with provenance notes. `tests/data/sample_logs/` now holds an initial clean/flawed fixture pair across all three formats (`.ulg`/`.bin`/`.tlog`), imported directly from FlightMD (Review R4/ADR-0018) — small enough (~1.5 MB) not to need LFS yet; a larger real-world corpus (50 flights, 11 vehicle types, ~8.5 GB) exists at the source project and is a deliberate future LFS-backed import, not yet scheduled.
 6. **Coverage gates fail closed** per the targets above; DAL C-equiv modules additionally require review sign-off on any uncovered branch (justification recorded).
 
 ## 3. SITL harness design (`tests/sitl/`)
