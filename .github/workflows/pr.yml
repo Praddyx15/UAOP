@@ -52,6 +52,15 @@ jobs:
       # that Qt6's Quick CMake package config depends on even for plain QML/Quick apps
       # with no custom shader work — omitting it fails find_package(Qt6 ... Quick).
       - run: aqt install-qt linux desktop 6.11.1 linux_gcc_64 -m qtshadertools -O ${{ github.workspace }}/qt-install
+      - name: Locate installed Qt kit directory
+        # aqt's on-disk directory name does not always match the arch argument passed
+        # to install-qt (e.g. "linux_gcc_64" installs to a "gcc_64" directory) — detect
+        # it rather than hardcode aqt's internal naming, which has changed before.
+        run: |
+          QT_DIR=$(find "${{ github.workspace }}/qt-install/6.11.1" -mindepth 1 -maxdepth 1 -type d | head -1)
+          echo "Detected Qt kit directory: $QT_DIR"
+          test -d "$QT_DIR/lib/cmake/Qt6" || { echo "::error::no Qt6 CMake config found under $QT_DIR"; exit 1; }
+          echo "QT_CMAKE_PREFIX=$QT_DIR" >> "$GITHUB_ENV"
       - name: Qt runtime + build dependencies
         run: |
           sudo apt-get update
@@ -59,7 +68,7 @@ jobs:
             libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
             libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-xinerama0 \
             libfontconfig1 libdbus-1-3
-      - run: cmake --preset gcs-debug -DCMAKE_PREFIX_PATH=${{ github.workspace }}/qt-install/6.11.1/linux_gcc_64
+      - run: cmake --preset gcs-debug -DCMAKE_PREFIX_PATH=${{ env.QT_CMAKE_PREFIX }}
       - run: cmake --build --preset gcs-debug
       - run: ctest --preset gcs-debug --output-on-failure
 
