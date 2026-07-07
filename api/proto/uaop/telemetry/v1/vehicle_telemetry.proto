@@ -1,0 +1,336 @@
+syntax = "proto3";
+
+package uaop.telemetry.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option cc_enable_arenas = true;
+
+// The frozen v1 telemetry census (ADR-0009, TELEMETRY_ENGINE.md §2). Additive-only:
+// new fields append with new numbers, new categories append new oneof members,
+// nothing here is ever renumbered or removed. proto3 `optional` marks every field
+// where absence is meaningful (no fix, no RTK, sensor not installed) — the UI and
+// the persistence layer must render "unknown", never a false zero.
+
+// Envelope carried by every published telemetry message. `sequence` is the
+// per-vehicle, per-category monotonic counter the gap detector keys off of
+// (TELEMETRY_ENGINE.md §5); `vehicle_time` is the source device clock (may be
+// unset if the vehicle has no synced clock), `bridge_receive_time` is always set
+// by mavlink-bridge on ingest.
+message TelemetryEnvelope {
+  string vehicle_id = 1;
+  uint64 sequence = 2;
+  google.protobuf.Timestamp vehicle_time = 3;
+  google.protobuf.Timestamp bridge_receive_time = 4;
+  bool sim = 5;
+}
+
+message GeoPoint {
+  optional double lat_deg = 1;
+  optional double lon_deg = 2;
+  optional float alt_wgs84_m = 3;
+}
+
+// position — NATS subject suffix "position"
+message Position {
+  enum FixType {
+    FIX_TYPE_UNSPECIFIED = 0;
+    FIX_TYPE_NO_FIX = 1;
+    FIX_TYPE_2D = 2;
+    FIX_TYPE_3D = 3;
+    FIX_TYPE_DGPS = 4;
+    FIX_TYPE_RTK_FLOAT = 5;
+    FIX_TYPE_RTK_FIXED = 6;
+  }
+
+  enum RtkFixType {
+    RTK_FIX_TYPE_UNSPECIFIED = 0;
+    RTK_FIX_TYPE_NONE = 1;
+    RTK_FIX_TYPE_FLOAT = 2;
+    RTK_FIX_TYPE_FIXED = 3;
+  }
+
+  message Rtk {
+    RtkFixType rtk_fix_type = 1;
+    optional float baseline_length_m = 2;
+    optional float baseline_heading_deg = 3;
+    optional float differential_age_s = 4;
+    string base_station_id = 5;
+    optional float horizontal_accuracy_m = 6;
+    optional float vertical_accuracy_m = 7;
+  }
+
+  optional double lat_deg = 1;
+  optional double lon_deg = 2;
+  optional float alt_wgs84_m = 3;
+  optional float alt_agl_m = 4;
+  FixType fix_type = 5;
+  optional uint32 satellites_visible = 6;
+  optional float hdop = 7;
+  optional float vdop = 8;
+  optional float pdop = 9;
+  optional float ground_speed_mps = 10;
+  optional float course_over_ground_deg = 11;
+  optional uint64 gps_utc_ms = 12;
+  optional Rtk rtk = 13;
+}
+
+// attitude — NATS subject suffix "attitude"
+message Attitude {
+  optional float roll_deg = 1;
+  optional float pitch_deg = 2;
+  optional float yaw_deg = 3;
+  optional float roll_rate_dps = 4;
+  optional float pitch_rate_dps = 5;
+  optional float yaw_rate_dps = 6;
+  optional float quat_w = 7;
+  optional float quat_x = 8;
+  optional float quat_y = 9;
+  optional float quat_z = 10;
+}
+
+// velocity — NATS subject suffix "velocity"
+message Velocity {
+  optional float vel_north_mps = 1;
+  optional float vel_east_mps = 2;
+  optional float vel_down_mps = 3;
+  optional float horizontal_speed_mps = 4;
+  optional float vertical_speed_mps = 5;
+  optional float airspeed_mps = 6;
+  optional float indicated_airspeed_mps = 7;
+}
+
+// imu — NATS subject suffix "imu"
+message Imu {
+  uint32 instance_id = 1;
+  optional float accel_x_mps2 = 2;
+  optional float accel_y_mps2 = 3;
+  optional float accel_z_mps2 = 4;
+  optional float gyro_x_radps = 5;
+  optional float gyro_y_radps = 6;
+  optional float gyro_z_radps = 7;
+  optional float mag_x_gauss = 8;
+  optional float mag_y_gauss = 9;
+  optional float mag_z_gauss = 10;
+  optional float temperature_c = 11;
+  optional float vibration_x = 12;
+  optional float vibration_y = 13;
+  optional float vibration_z = 14;
+  optional uint32 clip_count_x = 15;
+  optional uint32 clip_count_y = 16;
+  optional uint32 clip_count_z = 17;
+}
+
+// ekf — NATS subject suffix "ekf"
+message Ekf {
+  optional float pos_innovation = 1;
+  optional float vel_innovation = 2;
+  optional float heading_innovation = 3;
+  optional float mag_innovation = 4;
+  optional float baro_innovation = 5;
+  optional float gps_innovation = 6;
+  uint32 fault_flags = 7;
+  optional float pos_test_ratio = 8;
+  optional float vel_test_ratio = 9;
+  optional float heading_test_ratio = 10;
+  optional float mag_test_ratio = 11;
+  optional float baro_test_ratio = 12;
+  optional float gps_test_ratio = 13;
+  optional float terrain_alt_m = 14;
+  optional float wind_north_mps = 15;
+  optional float wind_east_mps = 16;
+}
+
+// battery — NATS subject suffix "battery"
+message Battery {
+  enum ChargeState {
+    CHARGE_STATE_UNSPECIFIED = 0;
+    CHARGE_STATE_OK = 1;
+    CHARGE_STATE_LOW = 2;
+    CHARGE_STATE_CRITICAL = 3;
+    CHARGE_STATE_UNHEALTHY = 4;
+  }
+
+  uint32 battery_id = 1;
+  optional float voltage_v = 2;
+  optional float current_a = 3;
+  optional float remaining_pct = 4;
+  optional float capacity_mah = 5;
+  optional float temperature_c = 6;
+  optional uint32 cell_count = 7;
+  repeated float cell_voltages_v = 8; // ≤14 entries (RISK_REGISTER-tracked, not proto-enforced)
+  uint32 fault_flags = 9;
+  ChargeState charge_state = 10;
+}
+
+// esc — NATS subject suffix "esc"; repeated per motor
+message EscTelemetry {
+  message Motor {
+    uint32 index = 1;
+    optional float rpm = 2;
+    optional float voltage_v = 3;
+    optional float current_a = 4;
+    optional float temperature_c = 5;
+    optional float duty_pct = 6;
+    uint32 failure_flags = 7;
+  }
+
+  repeated Motor motors = 1;
+}
+
+// rc — NATS subject suffix "rc"
+message Rc {
+  enum Protocol {
+    PROTOCOL_UNSPECIFIED = 0;
+    PROTOCOL_PPM = 1;
+    PROTOCOL_SBUS = 2;
+    PROTOCOL_CRSF = 3;
+    PROTOCOL_GHST = 4;
+    PROTOCOL_OTHER = 5;
+  }
+
+  repeated uint32 channels = 1; // up to 18 channel values
+  optional float rssi_pct = 2;
+  uint32 channel_count = 3;
+  bool signal_lost = 4;
+  bool failsafe_active = 5;
+  Protocol protocol = 6;
+}
+
+// link — NATS subject suffix "link"
+message Link {
+  enum C2Type {
+    C2_TYPE_UNSPECIFIED = 0;
+    C2_TYPE_RADIO = 1;
+    C2_TYPE_LTE = 2;
+    C2_TYPE_SATELLITE = 3;
+  }
+
+  optional float gcs_link_quality_pct = 1;
+  optional float gcs_link_latency_ms = 2;
+  optional float gcs_link_loss_pct = 3;
+  optional float data_rate_kbps = 4;
+  C2Type c2_type = 5;
+  optional float c2_quality_pct = 6;
+  optional float c2_latency_ms = 7;
+  optional float c2_loss_pct = 8;
+}
+
+// rf — NATS subject suffix "rf"
+message Rf {
+  enum SpoofingState {
+    SPOOFING_STATE_UNSPECIFIED = 0; // also covers UNKNOWN (TELEMETRY_ENGINE.md §2)
+    SPOOFING_STATE_NO = 1;
+    SPOOFING_STATE_INDETERMINATE = 2;
+    SPOOFING_STATE_SPOOFING = 3;
+  }
+
+  uint32 jamming_indicator = 1; // 0-255
+  SpoofingState spoofing_state = 2;
+  optional float noise_per_ms = 3;
+  optional float interference_level = 4;
+  optional float snr_db = 5;
+}
+
+// health — NATS subject suffix "health"
+message Health {
+  optional float cpu_pct = 1;
+  optional float ram_pct = 2;
+  optional float sd_free_mb = 3;
+  optional float temperature_c = 4;
+  optional float rail_5v_v = 5;
+  optional float rail_3v3_v = 6;
+  uint32 error_count = 7;
+  uint32 sys_status_present = 8; // SYS_STATUS bitmask
+  uint32 sys_status_enabled = 9;
+  uint32 sys_status_health = 10;
+}
+
+// state — NATS subject suffix "state"
+message VehicleState {
+  enum AutopilotType {
+    AUTOPILOT_TYPE_UNSPECIFIED = 0;
+    AUTOPILOT_TYPE_PX4 = 1;
+    AUTOPILOT_TYPE_ARDUPILOT = 2;
+    AUTOPILOT_TYPE_OTHER = 3;
+  }
+
+  enum VehicleType {
+    VEHICLE_TYPE_UNSPECIFIED = 0;
+    VEHICLE_TYPE_MULTIROTOR = 1;
+    VEHICLE_TYPE_FIXED_WING = 2;
+    VEHICLE_TYPE_VTOL = 3;
+    VEHICLE_TYPE_HELICOPTER = 4;
+    VEHICLE_TYPE_GROUND_ROVER = 5;
+    VEHICLE_TYPE_OTHER = 6;
+  }
+
+  enum LandedState {
+    LANDED_STATE_UNSPECIFIED = 0;
+    LANDED_STATE_ON_GROUND = 1;
+    LANDED_STATE_IN_AIR = 2;
+    LANDED_STATE_TAKEOFF = 3;
+    LANDED_STATE_LANDING = 4;
+  }
+
+  enum MissionState {
+    MISSION_STATE_UNSPECIFIED = 0;
+    MISSION_STATE_NO_MISSION = 1;
+    MISSION_STATE_ACTIVE = 2;
+    MISSION_STATE_PAUSED = 3;
+    MISSION_STATE_COMPLETE = 4;
+  }
+
+  bool armed = 1;
+  string mode = 2; // autopilot-native flight-mode string
+  AutopilotType autopilot_type = 3;
+  VehicleType vehicle_type = 4;
+  bool failsafe_active = 5;
+  string failsafe_reason = 6;
+  LandedState landed_state = 7;
+  optional GeoPoint home_position = 8;
+  optional float distance_home_m = 9;
+  optional float bearing_home_deg = 10;
+  optional uint32 flight_time_s = 11;
+  optional int32 mission_index = 12;
+  MissionState mission_state = 13;
+}
+
+// remoteid — NATS subject suffix "remoteid"
+message RemoteId {
+  enum EmergencyStatus {
+    EMERGENCY_STATUS_UNSPECIFIED = 0;
+    EMERGENCY_STATUS_NONE = 1;
+    EMERGENCY_STATUS_DECLARED = 2;
+  }
+
+  string uas_id = 1;
+  bool broadcast_active = 2;
+  bool uss_connected = 3;
+  google.protobuf.Timestamp last_broadcast_time = 4;
+  EmergencyStatus emergency_status = 5;
+}
+
+// The wire message for every telemetry publish. Each NATS subject
+// (uaop.telemetry.v1.<vehicle_id>.<category>) carries exactly one populated
+// oneof member, sharing the envelope for uniform sequence/gap accounting
+// across all categories (TELEMETRY_ENGINE.md §3/§5).
+message VehicleTelemetry {
+  TelemetryEnvelope envelope = 1;
+
+  oneof category {
+    Position position = 2;
+    Attitude attitude = 3;
+    Velocity velocity = 4;
+    Imu imu = 5;
+    Ekf ekf = 6;
+    Battery battery = 7;
+    EscTelemetry esc = 8;
+    Rc rc = 9;
+    Link link = 10;
+    Rf rf = 11;
+    Health health = 12;
+    VehicleState state = 13;
+    RemoteId remoteid = 14;
+  }
+}

@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package uaop.telemetry.v1;
+
+import "google/protobuf/timestamp.proto";
+import "uaop/telemetry/v1/vehicle_telemetry.proto";
+
+// The fleet-card summary form (TELEMETRY_ENGINE.md §2): one flattened,
+// low-cardinality view per vehicle, derived by the telemetry engine from the
+// latest known value of each category. Same schema version as
+// VehicleTelemetry — additive-only, never renumbered (ADR-0009).
+message TelemetrySnapshot {
+  string vehicle_id = 1;
+  google.protobuf.Timestamp as_of = 2;
+  bool sim = 3;
+
+  optional double lat_deg = 4;
+  optional double lon_deg = 5;
+  optional float alt_agl_m = 6;
+  optional float ground_speed_mps = 7;
+  optional float heading_deg = 8;
+
+  optional float battery_remaining_pct = 9;
+
+  Position.FixType gps_fix_type = 10;
+  optional uint32 satellites_visible = 11;
+
+  optional float link_quality_pct = 12;
+
+  bool armed = 13;
+  string mode = 14;
+  bool failsafe_active = 15;
+  optional float distance_home_m = 16;
+
+  uint32 active_fault_count = 17; // sum of nonzero fault/failure-flag sources
+}

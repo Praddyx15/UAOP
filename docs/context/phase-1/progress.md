@@ -184,3 +184,20 @@ Founder decision (2026-07-07): Poppins (Light/Regular/Medium/Bold, each with ita
 **Also received:** a reference screenshot (drone motor/prop-calculator gauge UI) flagged by the founder as potentially useful — filed for future reference against UI_GUIDELINES.md §3 (Motor Test / Vehicle Config panel work), not actioned yet since no such panel exists before M1's contracts land.
 
 **Next:** M1 — Contracts and platform plumbing, starting with M1.1 (telemetry v1 proto).
+
+---
+
+## 2026-07-07 (session 4, cont'd) — M1.1: telemetry v1 proto contract frozen
+
+`api/proto/uaop/telemetry/v1/` written by hand against TELEMETRY_ENGINE.md §2's full field census and ADR-0009's freeze decision — the foundational contract everything else in M1 depends on.
+
+**Built:**
+- `vehicle_telemetry.proto`: `TelemetryEnvelope` (vehicle_id, per-vehicle monotonic sequence, vehicle/bridge timestamps, sim flag) + all 13 categories (position, attitude, velocity, imu, ekf, battery, esc, rc, link, rf, health, state, remoteid) as nested message types, `VehicleTelemetry` wrapping them in a `oneof category` — one populated branch per NATS subject publish, sharing the envelope for uniform gap accounting. proto3 `optional` on every field where absence is meaningful (no fix, no RTK block, sensor not installed), per ADR-0009's "absent ≠ zero" rule. Units suffixed into field names throughout (`_deg`, `_mps`, `_mps2`, `_radps`, `_gauss`, `_v`, `_a`, `_c`) per CODING_STANDARDS §4.
+- `snapshot.proto` (`TelemetrySnapshot`, flattened fleet-card summary) and `delta.proto` (`TelemetryDelta`, same category oneof + `google.protobuf.FieldMask` for changed-fields-only transmission on constrained links) — both same v1 schema version, additive-only.
+- `buf.yaml` (v2 module, `STANDARD` lint, `FILE`-level breaking rules) and `buf.gen.yaml` (`protoc_builtin` C++/Python message codegen — gRPC plugins join once `gateway/v1` services land at M1.3). Installed `buf` 1.71.0 locally via `winget` to verify rather than assume.
+- **`buf lint`: clean.** **`buf breaking` verified against reality**: snapshotted the proto tree, deliberately renumbered `Attitude.roll_deg` from 1→99, confirmed `buf breaking` failed loudly (exit 100, correct diagnostic), reverted — the tool actually catches what ADR-0009 requires it to catch, not just configured and assumed.
+- New `proto-contract` CI job in `pr.yml`: `bufbuild/buf-setup-action` (SHA-pinned, v1.50.0) → `buf lint` → `buf breaking --against main`, with a one-time bootstrap guard (`git cat-file -e main:api/proto/buf.yaml`) so the PR that first introduces the module doesn't fail against a baseline that doesn't exist yet — every subsequent PR gets a real diff.
+
+**Docs updated:** IMPLEMENTATION_PLAN.md v0.2.7 (M1 status block), PROJECT_STRUCTURE.md v0.1.3 (`api/proto/` entries no longer bare `⊕`). All 4 CI guards re-verified green after the change.
+
+**Next:** M1.2 — `EventEnvelope` + platform error-code registry proto.

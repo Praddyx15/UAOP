@@ -20,6 +20,27 @@ jobs:
       - run: python tools/ci/check_licenses.py
       - run: python compliance/tools/rtm-generator/rtm_gen.py --check
 
+  proto-contract:
+    name: proto contract (buf lint + breaking)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with: { fetch-depth: 0 } # buf breaking needs main's history to diff against
+      - uses: bufbuild/buf-setup-action@a47c93e0b1648d5651a065437926377d060baa99 # v1.50.0
+      - name: buf lint
+        working-directory: api/proto
+        run: buf lint
+      - name: buf breaking (vs main)
+        working-directory: api/proto
+        # Skips gracefully the one time main has no buf.yaml yet (this PR's own
+        # bootstrap commit) — every PR after that has a real baseline to diff.
+        run: |
+          if git cat-file -e main:api/proto/buf.yaml 2>/dev/null; then
+            buf breaking --against '../../.git#branch=main,subdir=api/proto'
+          else
+            echo "::notice::no buf.yaml on main yet (bootstrap commit) — skipping breaking-change check"
+          fi
+
   build-linux:
     name: build+test linux x86_64
     runs-on: ubuntu-latest

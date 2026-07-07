@@ -1,8 +1,8 @@
 # PROJECT_STRUCTURE
 
-**Version 0.1.2 · 2026-07-07 · The final, implementation-ready repository blueprint. Ownership rules and monorepo rationale: [REPOSITORY_STRUCTURE.md](../08_Developer_Handbook/REPOSITORY_STRUCTURE.md). ⊕ *directories* were created in the 2026-07-04 structure pass (review R2); ⊕ *files* (CMake presets, workflows, proto files, configs) land with milestone M0 code. ⚠ = frozen pending OQ-1.**
+**Version 0.1.3 · 2026-07-07 · The final, implementation-ready repository blueprint. Ownership rules and monorepo rationale: [REPOSITORY_STRUCTURE.md](../08_Developer_Handbook/REPOSITORY_STRUCTURE.md). ⊕ *directories* were created in the 2026-07-04 structure pass (review R2); ⊕ *files* (CMake presets, workflows, proto files, configs) land with milestone M0 code. ⚠ = frozen pending OQ-1.**
 
-**Changelog:** v0.1.2 records two directories populated ahead of schedule from the real FlightMD project (Review R4 / ADR-0018): `backend/services/parameter-engine/data/` (seed metadata) and `tests/data/sample_logs/` (fixture logs) — both below, no longer bare `⊕`.
+**Changelog:** v0.1.2 records two directories populated ahead of schedule from the real FlightMD project (Review R4 / ADR-0018): `backend/services/parameter-engine/data/` (seed metadata) and `tests/data/sample_logs/` (fixture logs) — both below, no longer bare `⊕`. v0.1.3 (M1.1): `api/proto/buf.yaml`/`buf.gen.yaml` and `api/proto/uaop/telemetry/v1/` landed for real, no longer bare `⊕`.
 
 ## 1. Top-level tree (complete)
 
@@ -14,9 +14,9 @@ uaop-platform/
 ├── .github/workflows/               ⊕ pr.yml · nightly.yml · release.yml (CI_CD.md)
 ├── api/
 │   └── proto/
-│       ├── buf.yaml  buf.gen.yaml   ⊕
+│       ├── buf.yaml  buf.gen.yaml   — M1.1: v2 module, STANDARD lint, FILE breaking; C++/Python protoc_builtin codegen
 │       └── uaop/
-│           ├── telemetry/v1/        ⊕ vehicle_telemetry.proto · snapshot.proto · delta.proto
+│           ├── telemetry/v1/        — M1.1: vehicle_telemetry.proto (13-category census) · snapshot.proto · delta.proto
 │           ├── events/v1/           ⊕ envelope.proto · vehicle.proto · mission.proto · ...
 │           ├── gateway/v1/          ⊕ command.proto · mission.proto · parameter.proto ·
 │           │                          telemetry_query.proto · log.proto · compliance.proto
