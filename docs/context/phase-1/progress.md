@@ -129,4 +129,18 @@ Per MASTER_CONTEXT §11 and DOCUMENTATION_PROCESS §3: updated every working ses
 
 **M0 status: Definition of Done met except the M0.6 live-infra check**, which only needs the founder's one-time Docker Desktop click. Every engineering item in M0 is otherwise complete.
 
+---
+
+## 2026-07-07 (session 3, cont'd) — build-gcs-linux CI job: two fix-forward iterations to green
+
+R6/F44's new CI job (`build-gcs-linux`, provisions Qt via aqtinstall) failed twice before going green — both genuine findings, not process failures, resolved in the same session per the established fix-forward discipline:
+
+1. **Attempt 1 failed:** `cmake --preset gcs-debug` configure step failed immediately. Root cause: `qtshadertools` is a separate addon module — confirmed via `aqt list-qt --modules` rather than guessed — that Qt6's `Quick` CMake package config depends on even for plain QML apps doing no custom shader work. Added `-m qtshadertools` to the aqt install command.
+2. **Attempt 2 failed at the identical step**, meaning the first fix was necessary but not sufficient. Read aqt's own source (`QtRepoProperty.get_arch_dir_name` in `metadata.py`) rather than guessing again: the `linux_gcc_64` arch argument passed to `aqt install-qt` is an *install-request* identifier, not the on-disk directory name — aqt writes the kit to a directory named **`gcc_64`** (prefix stripped), exactly analogous to our local Windows kit living at `mingw_64` with no OS prefix. `CMAKE_PREFIX_PATH` had been pointing at a directory that never existed. Fixed by **detecting** the installed kit directory at runtime (with a `lib/cmake/Qt6` sanity check that fails loudly) instead of hardcoding aqt's internal naming — the same "verify against reality, don't assume compatibility" discipline as ADR-0020/F40, applied here to CI plumbing instead of a third-party library.
+3. **Attempt 3: all 5 jobs green** (guards, x86_64, ARM64, trivy, **GCS**). Run `28860006158`.
+
+**Lesson for future CI additions:** when wiring a new toolchain into CI, verify its actual installed layout/dependencies against source or direct experimentation rather than assuming documentation or naming conventions hold — this is now the second time in one session (MapLibre Qt-version check, aqt directory naming) that "verify, don't assume" caught a real gap before it became a stale, permanently-broken CI job.
+
+**M0 status unchanged from above: DoD met except the M0.6 Docker click.**
+
 **Next session:** once M0.6 is confirmed (or accepted as a known gap), M0 closes and **M1 (proto contracts)** begins — see IMPLEMENTATION_PLAN.md §"M1 — Contracts and platform plumbing".
