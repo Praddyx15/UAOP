@@ -25,6 +25,23 @@ qt_add_executable(uaop_gcs
 
 target_include_directories(uaop_gcs PRIVATE src)
 
+# Poppins (SIL OFL 1.1 — resources/fonts/Poppins/OFL.txt, THIRD_PARTY_NOTICES.md) embedded
+# as Qt resources so it renders identically offline/air-gapped — never a loose-file/system
+# font dependency (STYLE_GUIDE.md §3).
+qt_add_resources(uaop_gcs "fonts"
+    PREFIX "/fonts"
+    BASE "resources/fonts/Poppins"
+    FILES
+        resources/fonts/Poppins/Poppins-Light.ttf
+        resources/fonts/Poppins/Poppins-LightItalic.ttf
+        resources/fonts/Poppins/Poppins-Regular.ttf
+        resources/fonts/Poppins/Poppins-Italic.ttf
+        resources/fonts/Poppins/Poppins-Medium.ttf
+        resources/fonts/Poppins/Poppins-MediumItalic.ttf
+        resources/fonts/Poppins/Poppins-Bold.ttf
+        resources/fonts/Poppins/Poppins-BoldItalic.ttf
+)
+
 # Interim MBTiles renderer points at the small synthetic test tile set
 # (tests/data/map/world.mbtiles, ~85 tiles, ADR-0020) until DEPLOYMENT.md's
 # MapConfig wires a real operator-supplied basemap path.

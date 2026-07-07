@@ -1,6 +1,6 @@
 # STYLE_GUIDE
 
-**Version 0.1.0 · 2026-07-03 · Visual design tokens for the Qt/QML GCS. Tokens live as a QML theme singleton (`ui/styles/`); this document is their specification and rationale.**
+**Version 0.1.1 · 2026-07-07 · Visual design tokens for the Qt/QML GCS. Tokens live as a QML theme singleton (`ui/styles/`); this document is their specification and rationale.**
 
 ## 1. Principles
 
@@ -36,8 +36,12 @@ Rules: semantic colors never appear in charts as series colors (chart palette is
 
 | Role | Face | Notes |
 |---|---|---|
-| UI text | Inter | Labels, controls, body |
-| Numerics/telemetry | JetBrains Mono | **All live values, coordinates, ids** — tabular figures, fixed slots (UI_GUIDELINES.md §4) |
+| UI text | **Poppins** (Light 300 / Regular 400 / Medium 500 / Bold 700, each with a matching italic) | Labels, controls, body, panel titles, headers — the platform's brand face, founder preference (2026-07-07). SIL Open Font License 1.1 — freely embeddable; provenance in `THIRD_PARTY_NOTICES.md` |
+| Numerics/telemetry | JetBrains Mono *(system fallback pending bundling — separate from the Poppins pass)* | **All live values, coordinates, ids** — tabular figures, fixed slots (UI_GUIDELINES.md §4); deliberately **not** Poppins, which is proportional and would break column alignment on telemetry readouts |
+
+**Weight usage:** Light for secondary labels/units, Regular for body text, Medium for panel titles (`AllUppercase` + tracking) and emphasis, Bold for headers and the command-surface class (UI_GUIDELINES.md §7). Italic is reserved for annotative/explanatory text (advisory captions, AI-recommendation rationale) — never for emphasis alone, which is Medium/Bold's job.
+
+**Bundling:** all 8 static Poppins faces are embedded as Qt resources (`frontend/qt-desktop-gcs/resources/fonts/Poppins/`, loaded via `QFontDatabase::addApplicationFont` in `main.cpp`) — never a system-font dependency, consistent with the air-gap-first posture (UAOP-NFR-001): the GCS renders identically whether or not the host OS has Poppins installed.
 
 Scale (compact / control-room density): 11/12 body, 10/11 labels-units (uppercase, +2% tracking), 13/15 panel titles, 16/20 primary values, 22/28 HUD key values. Two densities from one token set; no free-form font sizes in QML — token references only, lint-enforced.
 

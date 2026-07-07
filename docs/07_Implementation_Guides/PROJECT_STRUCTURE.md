@@ -146,7 +146,7 @@ frontend/qt-desktop-gcs/
 │   ├── components/                  ValueSlot · StalenessRing · CommandButton · AlertRow · Panel
 │   ├── views/                       one QML module per panel (flight_hud/ map/ mission/ params/ …)
 │   └── utils/
-├── resources/                       fonts (Inter, JetBrains Mono) · icons
+├── resources/                       fonts/Poppins/ (8 static faces, embedded via qt_add_resources; SIL OFL 1.1) · JetBrains Mono (pending) · icons
 └── tests/                           models/ (Qt Test) · qml-smoke/ (fixture instantiation)
 ```
 

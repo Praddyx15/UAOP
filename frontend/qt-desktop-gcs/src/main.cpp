@@ -1,10 +1,13 @@
 // Wiring only: registry -> workspaces -> engine (PROJECT_STRUCTURE.md §5).
 // --selfcheck loads the shell offscreen and exits 0/1 — the ctest smoke gate.
 
+#include <QDebug>
+#include <QFontDatabase>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QTimer>
+#include <array>
 #include <cstring>
 
 #include "TelemetryController.h"
@@ -42,6 +45,23 @@ void registerWorkspaces(uaop::gcs::WorkspaceManager& manager) {
     manager.addWorkspace({"REVIEW", {{{"compliance"}, 1}, {{"flight"}, 2}}});
 }
 
+// Poppins, embedded via qt_add_resources (SIL OFL 1.1 — resources/fonts/Poppins/OFL.txt).
+// All 8 static faces are registered under the same family name; Qt's font matcher then
+// picks the closest face for a requested weight/italic combo (STYLE_GUIDE.md §3).
+void loadBundledFonts() {
+    static constexpr std::array<const char*, 8> kFaces = {
+        ":/fonts/Poppins-Light.ttf",       ":/fonts/Poppins-LightItalic.ttf",
+        ":/fonts/Poppins-Regular.ttf",     ":/fonts/Poppins-Italic.ttf",
+        ":/fonts/Poppins-Medium.ttf",      ":/fonts/Poppins-MediumItalic.ttf",
+        ":/fonts/Poppins-Bold.ttf",        ":/fonts/Poppins-BoldItalic.ttf",
+    };
+    for (const char* path : kFaces) {
+        if (QFontDatabase::addApplicationFont(QString::fromLatin1(path)) == -1) {
+            qWarning("failed to load bundled font: %s", path);
+        }
+    }
+}
+
 } // namespace
 
 int main(int argc, char* argv[]) {
@@ -53,6 +73,8 @@ int main(int argc, char* argv[]) {
     QGuiApplication app(argc, argv);
     app.setApplicationName("uaop-gcs");
     app.setOrganizationName("Sixty Motion Aerospace");
+
+    loadBundledFonts();
 
     TelemetryController telemetryController;
     uaop::gcs::PanelRegistry panelRegistry;

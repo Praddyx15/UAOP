@@ -165,3 +165,22 @@ The "one Docker click" turned out to be a genuine local-environment bug hunt, no
 **M0 — Definition of Done: fully met. All eight tasks (M0.1–M0.8) complete.** IMPLEMENTATION_PLAN.md → v0.2.5.
 
 **Next session:** begin **M1 — Contracts and platform plumbing** (proto schemas, `services/common` runtime library additions, NATS stream provisioning, api-gateway v0, DB migration harness) — see IMPLEMENTATION_PLAN.md §"M1".
+
+---
+
+## 2026-07-07 (session 4) — Pre-M1 bench task: Poppins bundled as the platform UI font
+
+Founder decision (2026-07-07): Poppins (Light/Regular/Medium/Bold, each with italic) is the GCS brand font, replacing the earlier Inter/system-fallback placeholder in STYLE_GUIDE.md §3. Not on the M1 WBS — handled as a contained bench task ahead of it, same pattern as prior quick founder-driven UI decisions.
+
+**Done:**
+- All 8 static Poppins TTF faces + `OFL.txt` (SIL Open Font License 1.1) fetched from `google/fonts` and placed under `frontend/qt-desktop-gcs/resources/fonts/Poppins/`, with a provenance `README.md`.
+- Embedded as Qt resources (`qt_add_resources` in CMakeLists.txt) and registered via `QFontDatabase::addApplicationFont` in `main.cpp` — never a loose-file or system-font dependency, consistent with the air-gap posture (UAOP-NFR-001).
+- `Theme.qml` updated: `uiFontFamily` → `"Poppins"`, new weight tokens (`weightLight`/`weightRegular`/`weightMedium`/`weightBold`) and two new font tokens (`bodyItalicFont`, `emphasisFont`). Numeric telemetry stays on the existing mono fallback (`Consolas`) — unrelated to this pass, tracked separately (bundling JetBrains Mono the same way).
+- STYLE_GUIDE.md (v0.1.1), PROJECT_STRUCTURE.md, THIRD_PARTY_NOTICES.md updated with the font entry and rationale.
+- Build verified clean after fixing a linker `Permission denied` (a previously-launched `uaop_gcs.exe` still held the file locked — killed the process, rebuild succeeded). **6/6 tests green.**
+- Font-load verified by running the `--selfcheck` binary directly (bypassing ctest's stdout suppression on pass): exit 0, **zero `qWarning` output** — `loadBundledFonts()` prints a named warning per face on failure, so silence across all 8 `addApplicationFont` calls confirms every face registered.
+- **Bug caught by the doc-link CI guard**: the new Poppins `README.md` had an off-by-one relative path to `STYLE_GUIDE.md` (`../../../../docs/...`, needed 5 `../` not 4 from that directory depth). Caught by `check_doc_links.py`, fixed, all 4 CI guards re-verified green (doc-links, licenses, frozen-dirs, RTM annotation lint).
+
+**Also received:** a reference screenshot (drone motor/prop-calculator gauge UI) flagged by the founder as potentially useful — filed for future reference against UI_GUIDELINES.md §3 (Motor Test / Vehicle Config panel work), not actioned yet since no such panel exists before M1's contracts land.
+
+**Next:** M1 — Contracts and platform plumbing, starting with M1.1 (telemetry v1 proto).
