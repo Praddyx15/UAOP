@@ -10,6 +10,11 @@
 #include "TelemetryController.h"
 #include "core/PanelRegistry.h"
 #include "core/WorkspaceManager.h"
+#include "map/MbtilesProvider.h"
+
+#ifndef UAOP_MBTILES_PATH
+#define UAOP_MBTILES_PATH ""
+#endif
 
 namespace {
 
@@ -26,13 +31,14 @@ void registerPanels(uaop::gcs::PanelRegistry& registry) {
     registry.registerPanel({"flight", "FLIGHT TELEMETRY", "views/telemetry/TelemetryView.qml", 480, 320});
     registry.registerPanel({"mission", "MISSION", "views/mission/MissionView.qml", 400, 320});
     registry.registerPanel({"compliance", "PRE-FLIGHT COMPLIANCE", "views/compliance/ComplianceView.qml", 360, 320});
+    registry.registerPanel({"map", "MAP", "components/MapView.qml", 400, 320});
     // DefenceView.qml stays on disk but unregistered: defense features are
     // Phase 4+ scope (Review R2/F13) — a parked view, not a shipped panel.
 }
 
 void registerWorkspaces(uaop::gcs::WorkspaceManager& manager) {
     manager.addWorkspace({"FLIGHT OPS",
-                          {{{"flight"}, 3}, {{"mission", "compliance"}, 2}}});
+                          {{{"flight"}, 3}, {{"map"}, 2}, {{"mission", "compliance"}, 2}}});
     manager.addWorkspace({"REVIEW", {{{"compliance"}, 1}, {{"flight"}, 2}}});
 }
 
@@ -59,6 +65,9 @@ int main(int argc, char* argv[]) {
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("telemetryController", &telemetryController);
+    // Interim MBTiles renderer (ADR-0020); engine takes ownership of the provider.
+    engine.addImageProvider("mbtiles", new uaop::gcs::map::MbtilesProvider(
+                                           QStringLiteral(UAOP_MBTILES_PATH)));
 
     const QUrl url(QStringLiteral("qrc:/UAOPGCS/ui/Shell.qml"));
     QObject::connect(

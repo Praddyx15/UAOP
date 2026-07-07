@@ -106,3 +106,27 @@ Per MASTER_CONTEXT §11 and DOCUMENTATION_PROCESS §3: updated every working ses
 - First cloud CI run failed on `aquasecurity/trivy-action@0.28.0` — their tags moved to a `v` prefix. Fixed by **SHA-pinning all actions** (`66ce154`), which CI_CD.md §6 had required all along; the original workflow violated our own supply-chain rule. Lesson logged: the rule existed, enforcement (a reviewer eye on `uses:` lines) did not — self-caught within one run.
 - **Run 28813987888 fully green: guards ✅ · linux x86_64 build+test ✅ · linux ARM64 build+test ✅ · trivy ✅.** UAOP-NFR-007 (one pipeline, both architectures) is now continuously verified — the code that passed on Windows/MinGW passes on both Linux arches untouched.
 - M0.6 live-up remains blocked locally: Docker Desktop engine did not come up after 7+ min of polling — likely waiting on a first-run GUI dialog (license/WSL2 prompt). **Founder action: open Docker Desktop once, accept any prompt**, then `bash tools/setup.sh` (Git Bash) or `docker compose -f infrastructure/docker/compose/compose.yaml up -d --wait` completes M0.6.
+
+---
+
+## 2026-07-07 (session 3) — M0.7 map spike resolved: ADR-0020, Review R6
+
+**Investigated first, built second** (per the spike's actual purpose): verified MapLibre Native Qt's real compatibility against the local toolchain rather than assuming it. Finding: prebuilt binaries top out at **Qt 6.5.3/6.6.3/6.7**; the local dev kit is **Qt 6.11.1** — no ABI-safe prebuilt, and a from-source build (submodules, multi-stage CMake, historically Linux/macOS/mobile-first) would have burned the whole timebox on a dependency that gates nothing else in Phase 1.
+
+**Decision (ADR-0020):** ship an interim raster renderer now, defer full MapLibre integration to its own future spike (tracked as a bench-task candidate, same status as the FlightMD real-log-corpus/LFS item).
+
+**Built:**
+- `SlippyMath.h` — pure lon/lat↔tile-fraction Web Mercator math, zero Qt dependency, 5 unit tests (`gcs.slippy_math`).
+- `MbtilesProvider` — `QQuickImageProvider` backed by `QSqlDatabase("QSQLITE")` (bundled with Qt, no new dependency); parameterized queries (verified no SQL-injection surface despite QML-originated input — R6/F42); malformed/missing tiles degrade to a labeled placeholder, never null/crash. 4 assertions (`gcs.mbtiles_provider`).
+- `MapView.qml` — minimal pan/zoom tile-grid view, registered as the ordinary `"map"` panel through the existing `PanelRegistry` — **the M0.4 panel-host framework needed zero changes**, which is the real validation of that framework's design.
+- `tests/data/map/world.mbtiles` — synthetic 85-tile test set (zoom 0–3, ~104 KB) + `make_test_mbtiles.py` generator; committed directly, no LFS (same size-based reasoning as the FlightMD fixtures).
+
+**Bug caught and fixed during this work (R6/F39):** the first test run crashed with an opaque OS exit code (0xC0000602) and zero diagnostic output. Root cause: `MbtilesProvider`'s placeholder-tile path calls `QPainter::drawText()`, which needs a font/platform backend — the test harness used a bare `QCoreApplication` instead of `QGuiApplication`. Fixed by matching the `gcs.selfcheck` pattern (`QGuiApplication` + `QT_QPA_PLATFORM=offscreen`). Logged as a general lesson: GUI-touching unit tests need a real `QGuiApplication`, not just `QCoreApplication` — a silent, opaque crash is worse than a clean assertion failure.
+
+**Result: 6/6 GCS tests green** (common.result, template.link_monitor, template.runs, gcs.selfcheck, gcs.slippy_math, gcs.mbtiles_provider). GCS launched and visually confirmed running with the new map panel in the FLIGHT OPS workspace.
+
+**Docs updated:** ADR-0020 + Review R6 (5 findings, F39–F43) in DECISIONS.md (v0.1.5); OQ-3 marked resolved there and in MASTER_CONTEXT.md §12; RISK_REGISTER R-11 updated (materialized-as-expected, residual risk narrowed, score 6→4); IMPLEMENTATION_PLAN.md v0.2.3 (M0.7 row + M0 status block).
+
+**M0 status: Definition of Done met except the M0.6 live-infra check**, which only needs the founder's one-time Docker Desktop click. Every engineering item in M0 is otherwise complete.
+
+**Next session:** once M0.6 is confirmed (or accepted as a known gap), M0 closes and **M1 (proto contracts)** begins — see IMPLEMENTATION_PLAN.md §"M1 — Contracts and platform plumbing".

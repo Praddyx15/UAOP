@@ -6,7 +6,7 @@ project(UAOPGCS LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 COMPONENTS Gui Qml Quick QuickControls2 REQUIRED)
+find_package(Qt6 COMPONENTS Gui Qml Quick QuickControls2 Sql REQUIRED)
 
 qt_standard_project_setup()
 
@@ -18,9 +18,18 @@ qt_add_executable(uaop_gcs
     src/core/PanelRegistry.cpp
     src/core/WorkspaceManager.h
     src/core/WorkspaceManager.cpp
+    src/map/SlippyMath.h
+    src/map/MbtilesProvider.h
+    src/map/MbtilesProvider.cpp
 )
 
 target_include_directories(uaop_gcs PRIVATE src)
+
+# Interim MBTiles renderer points at the small synthetic test tile set
+# (tests/data/map/world.mbtiles, ~85 tiles, ADR-0020) until DEPLOYMENT.md's
+# MapConfig wires a real operator-supplied basemap path.
+target_compile_definitions(uaop_gcs PRIVATE
+    UAOP_MBTILES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../tests/data/map/world.mbtiles")
 
 qt_add_qml_module(uaop_gcs
     URI UAOPGCS
@@ -31,6 +40,7 @@ qt_add_qml_module(uaop_gcs
         ui/components/PanelChrome.qml
         ui/components/PanelHost.qml
         ui/components/ComplianceCheckItem.qml
+        ui/components/MapView.qml
         ui/views/telemetry/TelemetryView.qml
         ui/views/compliance/ComplianceView.qml
         ui/views/defence/DefenceView.qml
@@ -42,6 +52,7 @@ target_link_libraries(uaop_gcs PRIVATE
     Qt6::Qml
     Qt6::Quick
     Qt6::QuickControls2
+    Qt6::Sql
 )
 
 if(MSVC)
@@ -57,4 +68,19 @@ if(BUILD_TESTING)
     set_tests_properties(gcs.selfcheck PROPERTIES
         ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
         TIMEOUT 60)
+
+    add_executable(uaop-gcs-slippy-math-test tests/slippy_math_test.cpp)
+    target_include_directories(uaop-gcs-slippy-math-test PRIVATE src)
+    target_compile_features(uaop-gcs-slippy-math-test PRIVATE cxx_std_20)
+    add_test(NAME gcs.slippy_math COMMAND uaop-gcs-slippy-math-test)
+
+    add_executable(uaop-gcs-mbtiles-test tests/mbtiles_provider_test.cpp
+                                          src/map/MbtilesProvider.cpp)
+    target_include_directories(uaop-gcs-mbtiles-test PRIVATE src)
+    target_link_libraries(uaop-gcs-mbtiles-test PRIVATE Qt6::Gui Qt6::Qml Qt6::Quick Qt6::Sql)
+    target_compile_definitions(uaop-gcs-mbtiles-test PRIVATE
+        UAOP_MBTILES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../tests/data/map/world.mbtiles")
+    target_compile_features(uaop-gcs-mbtiles-test PRIVATE cxx_std_20)
+    add_test(NAME gcs.mbtiles_provider COMMAND uaop-gcs-mbtiles-test)
+    set_tests_properties(gcs.mbtiles_provider PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 endif()

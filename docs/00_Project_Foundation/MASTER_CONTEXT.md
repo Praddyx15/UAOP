@@ -60,7 +60,7 @@ Three tiers, in order of delivery:
 | ML | PyTorch (LSTM anomaly), SciPy/scikit-learn (FFT, PID optimisation), ONNX for edge inference | |
 | Containers | Docker (Compose for workstation, k3s for edge, Kubernetes for cloud) | |
 | Monitoring | Prometheus + Grafana | |
-| Maps | MapLibre Native (Qt) + offline tile packages (PMTiles/MBTiles — format verification open, OQ-3) | Open source, zero API keys, offline-first |
+| Maps | Interim: `QQuickImageProvider` + MBTiles/SQLite raster renderer (ADR-0020). Target: MapLibre Native (Qt) + offline tile packages, deferred pending a Qt-6.11-matching prebuilt or a dedicated source-build spike | Open source, zero API keys, offline-first |
 
 ## 5. Architecture principles (non-negotiable)
 
@@ -145,7 +145,7 @@ Development is founder-led, with AI tooling used to accelerate drafting, review,
 |---|---|---|---|
 | OQ-1 | `dji-service/` and `fpv-service/` exist in the repo but in no planning document. Is DJI (MSDK/Cloud API) and analog/digital FPV support in scope? If so, which phase? | Phase scoping only | DECISIONS.md §Open |
 | ~~OQ-2~~ | RESOLVED 2026-07-04 (R2/F16): `middleware/mavlink-bridge/` created; separate-service boundary holds. | — | DECISIONS.md §R2 |
-| OQ-3 | Offline tile format for MapLibre **Native** (Qt): PMTiles support differs from MapLibre GL JS. MBTiles or a local tile server may be required. Needs a spike. | Phase 1 map panel | RISK_REGISTER R-11 |
+| ~~OQ-3~~ | RESOLVED 2026-07-07 (R6/ADR-0020): interim MBTiles raster renderer shipped; MapLibre Native Qt deferred (Qt version mismatch — see ADR-0020). | — | DECISIONS.md §R6 |
 | OQ-4 | Platform licensing model (open-core vs proprietary) — affects SDK and marketplace design. | Phase 4 | BUSINESS_MODEL.md |
 | OQ-5 | Business model pricing figures are proposals, not founder-validated. | None | BUSINESS_MODEL.md |
 | OQ-6 | GCS emergency direct-connect: embed a minimal MAVLink client in the GCS for situational awareness + EMERGENCY commands if the edge node dies mid-flight? (Review R1/F9.) | Phase 2 planning | DECISIONS.md §Open |
