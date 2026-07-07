@@ -143,4 +143,25 @@ R6/F44's new CI job (`build-gcs-linux`, provisions Qt via aqtinstall) failed twi
 
 **M0 status unchanged from above: DoD met except the M0.6 Docker click.**
 
-**Next session:** once M0.6 is confirmed (or accepted as a known gap), M0 closes and **M1 (proto contracts)** begins — see IMPLEMENTATION_PLAN.md §"M1 — Contracts and platform plumbing".
+---
+
+## 2026-07-07 (session 3, cont'd) — M0.6 closed: Docker Desktop environment issue resolved; M0 fully complete
+
+The "one Docker click" turned out to be a genuine local-environment bug hunt, not a first-run consent dialog. Recorded in full since it cost real time and the fix is non-obvious if it recurs on another machine:
+
+**Symptom:** Docker Desktop crashed on every launch attempt with variations of `initializing <component>: listening on unix://...: remove ...: The file cannot be accessed by the system.` — first on `Inference Manager` (`dockerInference`), then on `Secrets Engine` (`engine.sock`, a stale file dated **2026-05-25**, six weeks old).
+
+**What did NOT fix it** (all tried, all failed, each a real data point):
+1. Deleting the stale socket file as Administrator — worked once, but Docker recreated an identical broken file on the very next launch.
+2. Docker Desktop's own "Reset to factory defaults" — the stale files lived outside Docker's own data tree (`%LOCALAPPDATA%\docker-secrets-engine\`, not `%LOCALAPPDATA%\Docker\`), so the reset didn't touch them.
+3. Setting `EnableDockerAI: false` in `settings-store.json` — the Inference Manager subsystem starts regardless of that flag; it controls a different feature (likely the "Ask Gordon" chat UI).
+
+**Root cause:** Windows Defender real-time protection was intercepting reparse-point (Unix-socket-emulation) operations under `AppData\Local\Docker\` and `AppData\Local\docker-secrets-engine\` — Docker could create these special socket files but not delete/replace them on the next startup, and neither could an elevated `Remove-Item` or `fsutil reparsepoint delete` (both failed with the identical OS-level error even as Administrator, which was the tell that this wasn't an ordinary permissions problem).
+
+**Fix:** `Add-MpPreference -ExclusionPath 'C:\Users\akass\AppData\Local\Docker','C:\Users\akass\AppData\Local\docker-secrets-engine'` (elevated), then one final elevated deletion of both stale files, then relaunch. **Engine came up clean and stayed stable.**
+
+**M0.6 completed:** `bash tools/setup.sh up` — NATS, TimescaleDB, Redis, MinIO all `Up ... (healthy)`, confirmed stable 3+ minutes later via `docker compose ps`. Build re-verified (3/3 tests), all 4 CI guards re-verified green.
+
+**M0 — Definition of Done: fully met. All eight tasks (M0.1–M0.8) complete.** IMPLEMENTATION_PLAN.md → v0.2.5.
+
+**Next session:** begin **M1 — Contracts and platform plumbing** (proto schemas, `services/common` runtime library additions, NATS stream provisioning, api-gateway v0, DB migration harness) — see IMPLEMENTATION_PLAN.md §"M1".
