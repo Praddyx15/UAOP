@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package uaop.events.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// The canonical event envelope (EVENT_FLOW.md §4) — every `uaop.event.v1.*`
+// NATS message uses this shape. `payload` carries the schema-versioned domain
+// event (vehicle/mission/param/... payloads land per-domain as each engine is
+// built); `schema` names which one so an untyped consumer (compliance-engine's
+// wildcard subscription, observability) can dispatch without importing every
+// domain schema.
+message EventEnvelope {
+  string event_id = 1;             // UUIDv7
+  string schema = 2;               // e.g. "uaop.event.vehicle.state_changed/1"
+  uint64 sequence = 3;             // per-source monotonic
+  google.protobuf.Timestamp occurred_at = 4;
+  string source_service = 5;
+  string vehicle_id = 6;           // empty for platform events
+  string correlation_id = 7;       // command/request causality
+  string actor = 8;                // operator identity for human-initiated events
+  bool sim = 9;                    // simulation provenance — never dropped in transit
+  bytes payload = 10;               // schema-versioned message
+}

@@ -201,3 +201,19 @@ Founder decision (2026-07-07): Poppins (Light/Regular/Medium/Bold, each with ita
 **Docs updated:** IMPLEMENTATION_PLAN.md v0.2.7 (M1 status block), PROJECT_STRUCTURE.md v0.1.3 (`api/proto/` entries no longer bare `⊕`). All 4 CI guards re-verified green after the change.
 
 **Next:** M1.2 — `EventEnvelope` + platform error-code registry proto.
+
+---
+
+## 2026-07-07 (session 4, cont'd) — CI verified green, M1.2 done: EventEnvelope + error registry
+
+M1.1's push was verified against real CI, not assumed: run [28877934227](https://github.com/Praddyx15/UAOP/actions/runs/28877934227) — all 6 jobs (guards, x86_64, ARM64, GCS, trivy, and the new **proto-contract** job) green.
+
+**M1.2 built:**
+- `api/proto/uaop/events/v1/envelope.proto` — `EventEnvelope`, copied verbatim from EVENT_FLOW.md §4's already-frozen shape (event_id, schema, sequence, occurred_at, source_service, vehicle_id, correlation_id, actor, sim, payload).
+- `api/proto/uaop/errors/v1/errors.proto` — `ErrorCode` enum registry (API_SPECIFICATION.md §1's single error envelope) + `Error` message. **Placement deviation, documented:** API_SPECIFICATION.md originally sketched an unversioned `api/proto/errors.proto`; PROJECT_STRUCTURE.md's tree also showed it unversioned directly under `uaop/`. Put it at `uaop/errors/v1/` instead (package `uaop.errors.v1`) because an unversioned single-segment package fails buf's `PACKAGE_DIRECTORY_MATCH` lint rule and breaks the versioning convention every other package in the tree follows — a real constraint discovered by running the linter, not a stylistic preference. API_SPECIFICATION.md §1 and PROJECT_STRUCTURE.md updated to the actual path (doc/code disagreement is a P1 defect per CLAUDE.md).
+- Enum values are prefixed `ERROR_CODE_*` (buf's `ENUM_VALUE_PREFIX` rule) — e.g. `ERROR_CODE_VEHICLE_NOT_READY`, not API_SPECIFICATION.md's shorthand `VEHICLE_NOT_READY` example. proto3 JSON mapping renders the full enum name, so that's the exact wire string clients receive; noted as a deliberate, lint-driven deviation from the doc's illustrative shorthand.
+- `buf lint`: clean. `buf breaking --against main`: clean (pure additions, exit 0).
+
+**Docs updated:** IMPLEMENTATION_PLAN.md v0.2.8, PROJECT_STRUCTURE.md v0.1.4, API_SPECIFICATION.md §1 path fix. All 4 CI guards + buf lint re-verified green.
+
+**Next:** M1.3 — `api/proto/uaop/gateway/v1/` (command/mission/parameter/telemetry_query/log/compliance services).

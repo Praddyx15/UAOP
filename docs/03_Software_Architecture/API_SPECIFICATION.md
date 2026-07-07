@@ -16,7 +16,7 @@ Conventions: URI-versioned (`/api/v1`); JSON is proto3 JSON mapping of the same 
 { "error": { "code": "VEHICLE_NOT_READY", "message": "...", "correlation_id": "...", "details": {} } }
 ```
 
-Error codes are a registry in `api/proto/errors.proto` — services may not invent strings ad hoc.
+Error codes are a registry in `api/proto/uaop/errors/v1/errors.proto` — services may not invent strings ad hoc.
 
 ## 2. Authentication & authorization
 
