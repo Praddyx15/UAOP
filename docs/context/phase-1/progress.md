@@ -97,6 +97,11 @@ Per MASTER_CONTEXT §11 and DOCUMENTATION_PROCESS §3: updated every working ses
 
 **Next session:** M0.4 (panel host + migrate 4 prototype views), then M0.7 map spike; M0 DoD check; then M1.1 proto contracts.
 
+**Session 2 (2026-07-07) — M0.4 complete:**
+- [x] M0.4 panel-host framework: PanelRegistry/WorkspaceManager (src/core), STYLE_GUIDE Theme tokens + legacy aliases, Shell.qml (workspace switcher + status chips), PanelHost (SplitView columns, tabbed stacks), floating-copy tear-off v0, `--selfcheck` smoke test in ctest. 4/4 tests green locally. Debt recorded: views still use legacy Theme aliases (re-theme M2/M6); tear-off is copy-based until M6's move-to-float docking; fonts are system fallbacks until Inter/JetBrains Mono are bundled.
+- Attribution policy enforced this session per the standing instruction: history rewritten (sole-author commits), docs reframed to AI-assisted/tooling-neutral wording, `.claude/settings.local.json` disables co-author trailers.
+- M0 DoD nearly met: remaining = M0.7 map spike + M0.6 live infra-up (Docker Desktop first-run click).
+
 **Post-push addendum (same day):**
 - First cloud CI run failed on `aquasecurity/trivy-action@0.28.0` — their tags moved to a `v` prefix. Fixed by **SHA-pinning all actions** (`66ce154`), which CI_CD.md §6 had required all along; the original workflow violated our own supply-chain rule. Lesson logged: the rule existed, enforcement (a reviewer eye on `uses:` lines) did not — self-caught within one run.
 - **Run 28813987888 fully green: guards ✅ · linux x86_64 build+test ✅ · linux ARM64 build+test ✅ · trivy ✅.** UAOP-NFR-007 (one pipeline, both architectures) is now continuously verified — the code that passed on Windows/MinGW passes on both Linux arches untouched.
