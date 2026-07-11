@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+package uaop.gateway.v1;
+
+import "google/protobuf/timestamp.proto";
+import "uaop/telemetry/v1/vehicle_telemetry.proto";
+
+// TelemetryQueryService — TELEMETRY_ENGINE.md §4 query surface. Time-range
+// queries support server-side downsampling; event-window queries pull a
+// pinned window ("±60s around this failsafe"); exports run as async jobs so
+// the gateway never blocks on a large table scan. Query cost guards
+// (QUERY_COST_EXCEEDED, uaop/errors/v1) refuse oversized ranges outright
+// rather than degrading silently — "ask for less, or run an export job."
+service TelemetryQueryService {
+  rpc QueryHistory(QueryHistoryRequest) returns (QueryHistoryResponse);
+  rpc QueryEventWindow(QueryEventWindowRequest) returns (QueryEventWindowResponse);
+  rpc StartExport(StartExportRequest) returns (StartExportResponse);
+  rpc GetExportStatus(GetExportStatusRequest) returns (GetExportStatusResponse);
+}
+
+message QueryHistoryRequest {
+  string vehicle_id = 1;
+  repeated string categories = 2; // e.g. "position", "battery" — TELEMETRY_ENGINE.md §2
+  google.protobuf.Timestamp from = 3;
+  google.protobuf.Timestamp to = 4;
+  optional float rate_hz = 5; // downsample selector; absent = full received rate
+}
+
+message TelemetryGap {
+  string category = 1;
+  uint64 from_seq = 2;
+  uint64 to_seq = 3;
+  string plausible_cause = 4; // link loss / shed / restart (TELEMETRY_ENGINE.md §5)
+}
+
+// Shared shape between a time-range query and an event-window query — both
+// are "here are the samples, and here is exactly where the record has gaps"
+// (TELEMETRY_ENGINE.md §5's explicit-gap rendering). Wrapped by a distinct
+// XResponse message per RPC (buf's RPC_RESPONSE_STANDARD_NAME rule) rather
+// than reused directly as a response type.
+message TelemetryQueryResult {
+  repeated uaop.telemetry.v1.VehicleTelemetry samples = 1;
+  repeated TelemetryGap gaps = 2; // explicit-gap rendering — never silently interpolated
+}
+
+message QueryHistoryResponse {
+  TelemetryQueryResult result = 1;
+}
+
+message QueryEventWindowRequest {
+  string vehicle_id = 1;
+  google.protobuf.Timestamp center = 2;
+  uint32 window_seconds = 3; // symmetric window, e.g. 60 for "±60s"
+  repeated string categories = 4;
+}
+
+message QueryEventWindowResponse {
+  TelemetryQueryResult result = 1;
+}
+
+enum ExportFormat {
+  EXPORT_FORMAT_UNSPECIFIED = 0;
+  EXPORT_FORMAT_CSV = 1;
+  EXPORT_FORMAT_JSON = 2;
+  EXPORT_FORMAT_ULOG_ADJACENT = 3;
+}
+
+message StartExportRequest {
+  string vehicle_id = 1;
+  repeated string categories = 2;
+  google.protobuf.Timestamp from = 3;
+  google.protobuf.Timestamp to = 4;
+  ExportFormat format = 5;
+}
+
+message StartExportResponse {
+  string job_id = 1;
+}
+
+message GetExportStatusRequest {
+  string job_id = 1;
+}
+
+message GetExportStatusResponse {
+  ExportStatus status = 1;
+}
+
+enum ExportState {
+  EXPORT_STATE_UNSPECIFIED = 0;
+  EXPORT_STATE_RUNNING = 1;
+  EXPORT_STATE_COMPLETE = 2;
+  EXPORT_STATE_FAILED = 3;
+}
+
+message ExportStatus {
+  string job_id = 1;
+  ExportState state = 2;
+  optional float progress_pct = 3;
+  string download_url = 4; // populated when COMPLETE
+  string failure_reason = 5; // populated when FAILED
+}

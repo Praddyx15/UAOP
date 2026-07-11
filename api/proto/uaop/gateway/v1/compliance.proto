@@ -1,0 +1,106 @@
+syntax = "proto3";
+
+package uaop.gateway.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// ComplianceService — API_SPECIFICATION.md §3 checklist/audit/remote-id/node
+// resource map. SignPreflightChecklist binds operator identity per
+// COMPLIANCE.md §B.2 (HLR-043); GetAuditExport produces a self-verifying,
+// chain-verified bundle over the append-only audit log (COMPLIANCE.md §B.3)
+// — never a raw table dump.
+service ComplianceService {
+  rpc GetPreflightChecklist(GetPreflightChecklistRequest) returns (GetPreflightChecklistResponse);
+  rpc SignPreflightChecklist(SignPreflightChecklistRequest) returns (SignPreflightChecklistResponse);
+  rpc GetAuditExport(GetAuditExportRequest) returns (GetAuditExportResponse);
+  rpc GetRemoteIdStatus(GetRemoteIdStatusRequest) returns (GetRemoteIdStatusResponse);
+  rpc GetNodeStatus(GetNodeStatusRequest) returns (GetNodeStatusResponse);
+}
+
+message ChecklistItem {
+  string item_id = 1;
+  string description = 2;
+  bool checked = 3;
+}
+
+enum ChecklistState {
+  CHECKLIST_STATE_UNSPECIFIED = 0;
+  CHECKLIST_STATE_IN_PROGRESS = 1;
+  CHECKLIST_STATE_SIGNED = 2; // AUTHORISE FLIGHT gate — 30-item list, UAOP-HLR-043
+}
+
+message PreflightChecklist {
+  string run_id = 1;
+  string vehicle_id = 2;
+  repeated ChecklistItem items = 3; // 30-item list per COMPLIANCE.md §B.2
+  ChecklistState state = 4;
+  string signed_by = 5;             // operator identity, bound at signing
+  google.protobuf.Timestamp signed_at = 6;
+}
+
+message GetPreflightChecklistRequest {
+  string vehicle_id = 1;
+}
+
+message GetPreflightChecklistResponse {
+  PreflightChecklist checklist = 1;
+}
+
+message SignPreflightChecklistRequest {
+  string run_id = 1;
+  repeated ChecklistItem items = 2;
+}
+
+message SignPreflightChecklistResponse {
+  PreflightChecklist checklist = 1;
+}
+
+message GetAuditExportRequest {
+  google.protobuf.Timestamp from = 1;
+  google.protobuf.Timestamp to = 2;
+  string domain = 3; // optional filter
+}
+
+message AuditExport {
+  string download_url = 1;
+  bool chain_verified = 2; // false only if verification itself failed — never silently omitted
+  string chain_head_hash = 3;
+}
+
+message GetAuditExportResponse {
+  AuditExport export = 1;
+}
+
+message GetRemoteIdStatusRequest {
+  string vehicle_id = 1;
+}
+
+message RemoteIdStatus {
+  string uas_id = 1;
+  bool broadcast_active = 2;
+  bool uss_connected = 3;
+  google.protobuf.Timestamp last_broadcast_time = 4;
+}
+
+message GetRemoteIdStatusResponse {
+  RemoteIdStatus status = 1;
+}
+
+message GetNodeStatusRequest {}
+
+enum DegradationLevel {
+  DEGRADATION_LEVEL_UNSPECIFIED = 0;
+  DEGRADATION_LEVEL_NOMINAL = 1;
+  DEGRADATION_LEVEL_DEGRADED = 2; // ladder position, EDGE_ARCHITECTURE.md §4
+  DEGRADATION_LEVEL_CRITICAL = 3;
+}
+
+message NodeStatus {
+  DegradationLevel degradation = 1;
+  string version = 2;
+  float disk_watermark_pct = 3;
+}
+
+message GetNodeStatusResponse {
+  NodeStatus status = 1;
+}

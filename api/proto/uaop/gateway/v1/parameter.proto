@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package uaop.gateway.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// ParameterService — API_SPECIFICATION.md §3 parameter resource map.
+// Writes are validated against type/safe-range metadata and confirmed via
+// MAVLink ACK with read-back verification (PRODUCT_REQUIREMENTS.md
+// UAOP-HLR-020/021) — WriteParameter is therefore asynchronous like commands,
+// never a synchronous "success" the bridge can't actually back up yet.
+service ParameterService {
+  rpc GetParameters(GetParametersRequest) returns (GetParametersResponse);
+  rpc GetParameterVersions(GetParameterVersionsRequest) returns (GetParameterVersionsResponse);
+  rpc WriteParameter(WriteParameterRequest) returns (WriteParameterResponse); // 202 + correlation_id
+}
+
+enum ParameterValueType {
+  PARAMETER_VALUE_TYPE_UNSPECIFIED = 0;
+  PARAMETER_VALUE_TYPE_INT32 = 1;
+  PARAMETER_VALUE_TYPE_FLOAT = 2;
+}
+
+message ParameterValue {
+  oneof value {
+    int32 int_value = 1;
+    float float_value = 2;
+  }
+}
+
+message Parameter {
+  string name = 1;
+  string group = 2;
+  ParameterValueType value_type = 3;
+  ParameterValue value = 4;
+  optional ParameterValue min_value = 5;
+  optional ParameterValue max_value = 6;
+  string description = 7;
+}
+
+message GetParametersRequest {
+  string vehicle_id = 1;
+  string group = 2;  // optional filter
+  string search = 3; // optional filter
+}
+
+message GetParametersResponse {
+  repeated Parameter parameters = 1;
+}
+
+message GetParameterVersionsRequest {
+  string vehicle_id = 1;
+  string name = 2;
+}
+
+message ParameterVersion {
+  ParameterValue old_value = 1;
+  ParameterValue new_value = 2;
+  string operator_id = 3;
+  google.protobuf.Timestamp changed_at = 4;
+}
+
+message GetParameterVersionsResponse {
+  repeated ParameterVersion versions = 1;
+}
+
+enum RiskClass {
+  RISK_CLASS_UNSPECIFIED = 0;
+  RISK_CLASS_LOW = 1;
+  RISK_CLASS_MEDIUM = 2;
+  RISK_CLASS_HIGH = 3; // requires explicit acknowledgment (UAOP-HLR-022)
+}
+
+message WriteParameterRequest {
+  string vehicle_id = 1;
+  string name = 2;
+  ParameterValue value = 3;
+  bool high_risk_acknowledged = 4; // must be true when the parameter's RiskClass is HIGH
+}
+
+message WriteParameterResponse {
+  string correlation_id = 1;
+}

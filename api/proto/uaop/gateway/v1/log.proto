@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package uaop.gateway.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// LogService — API_SPECIFICATION.md §3 log/report resource map. Logs are
+// hash-chained at capture for tamper evidence (UAOP-HLR-032); AnalyseLog
+// dispatches to ai-engine and is Phase 2 scope (EVENT_FLOW.md's
+// `log.analysis_complete` event) — defined here now so the gateway contract
+// doesn't need a breaking change when ai-engine actually lands.
+service LogService {
+  rpc ListLogs(ListLogsRequest) returns (ListLogsResponse);
+  rpc GetLog(GetLogRequest) returns (GetLogResponse);
+  rpc ExportLog(ExportLogRequest) returns (ExportLogResponse);
+  rpc AnalyseLog(AnalyseLogRequest) returns (AnalyseLogResponse); // Phase 2: ai-engine
+  rpc GetReport(GetReportRequest) returns (GetReportResponse);
+}
+
+message LogEntry {
+  string log_id = 1;
+  string vehicle_id = 2;
+  google.protobuf.Timestamp captured_at = 3;
+  string content_hash = 4; // tamper evidence, UAOP-HLR-032
+  uint64 size_bytes = 5;
+}
+
+message ListLogsRequest {
+  string vehicle_id = 1;
+  google.protobuf.Timestamp from = 2;
+  google.protobuf.Timestamp to = 3;
+  int32 page_size = 4;
+  string page_token = 5;
+}
+
+message ListLogsResponse {
+  repeated LogEntry logs = 1;
+  string next_page_token = 2;
+}
+
+message GetLogRequest {
+  string log_id = 1;
+}
+
+message GetLogResponse {
+  LogEntry log = 1;
+}
+
+enum LogExportFormat {
+  LOG_EXPORT_FORMAT_UNSPECIFIED = 0;
+  LOG_EXPORT_FORMAT_ULOG = 1;
+  LOG_EXPORT_FORMAT_CSV = 2;
+  LOG_EXPORT_FORMAT_JSON = 3;
+}
+
+message ExportLogRequest {
+  string log_id = 1;
+  LogExportFormat format = 2;
+}
+
+message ExportLogResponse {
+  string download_url = 1;
+}
+
+message AnalyseLogRequest {
+  string log_id = 1;
+}
+
+message AnalyseLogResponse {
+  string correlation_id = 1; // resolves via ai.recommendation_* / log.analysis_complete events
+}
+
+message Report {
+  string report_id = 1;
+  string log_id = 2;
+  google.protobuf.Timestamp generated_at = 3;
+  string pdf_url = 4;
+}
+
+message GetReportRequest {
+  string report_id = 1;
+}
+
+message GetReportResponse {
+  Report report = 1;
+}

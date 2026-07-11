@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package uaop.gateway.v1;
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+// VehicleCommandService — API_SPECIFICATION.md §4: commands are asynchronous
+// with mandatory resolution, never fire-and-forget. SubmitCommand returns
+// immediately with a correlation_id; the real answer arrives later, either as
+// a `vehicle.command_result` event (EVENT_FLOW.md §5) or by polling
+// GetCommandResult. TIMEOUT is a distinct terminal state from REJECTED — link
+// uncertainty must never be silently treated as failure-therefore-safe.
+service VehicleCommandService {
+  rpc SubmitCommand(SubmitCommandRequest) returns (SubmitCommandResponse);
+  rpc GetCommandResult(GetCommandResultRequest) returns (GetCommandResultResponse);
+}
+
+enum CommandKind {
+  COMMAND_KIND_UNSPECIFIED = 0;
+  COMMAND_KIND_ARM = 1;
+  COMMAND_KIND_DISARM = 2;
+  COMMAND_KIND_MODE = 3;
+  COMMAND_KIND_RTL = 4;
+  COMMAND_KIND_TAKEOFF = 5;
+  COMMAND_KIND_LAND = 6;
+  COMMAND_KIND_MISSION_START = 7;
+}
+
+message SubmitCommandRequest {
+  string vehicle_id = 1;
+  CommandKind command = 2;
+  google.protobuf.Struct params = 3; // command-specific (e.g. mode name, takeoff altitude)
+  string idempotency_key = 4;        // API_SPECIFICATION.md §4: replays return the original correlation
+}
+
+message SubmitCommandResponse {
+  string correlation_id = 1;
+}
+
+message GetCommandResultRequest {
+  string correlation_id = 1;
+}
+
+enum CommandStatus {
+  COMMAND_STATUS_UNSPECIFIED = 0;
+  COMMAND_STATUS_PENDING = 1;
+  COMMAND_STATUS_ACCEPTED = 2;   // FC acknowledged
+  COMMAND_STATUS_REJECTED = 3;   // FC or authority refused, with reason
+  COMMAND_STATUS_TIMEOUT = 4;    // link uncertainty — UI renders "state unknown, verify", never failure
+}
+
+message CommandResult {
+  string correlation_id = 1;
+  string vehicle_id = 2;
+  CommandKind command = 3;
+  CommandStatus status = 4;
+  string reason = 5; // populated for REJECTED
+  google.protobuf.Timestamp resolved_at = 6;
+}
+
+message GetCommandResultResponse {
+  CommandResult result = 1;
+}
