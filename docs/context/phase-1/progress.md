@@ -217,3 +217,21 @@ M1.1's push was verified against real CI, not assumed: run [28877934227](https:/
 **Docs updated:** IMPLEMENTATION_PLAN.md v0.2.8, PROJECT_STRUCTURE.md v0.1.4, API_SPECIFICATION.md §1 path fix. All 4 CI guards + buf lint re-verified green.
 
 **Next:** M1.3 — `api/proto/uaop/gateway/v1/` (command/mission/parameter/telemetry_query/log/compliance services).
+
+---
+
+## 2026-07-07 (session 5) — DO-178C folder scaffold, M1.3, M1.4: services/common runtime
+
+Founder request: proceed through M1.3–M1.8, and set up a folder for HLR/LLR/DO-178C artifacts per a reference DO-178C Annex A table infographic. Handled the folder request and M1.3/M1.4 this session; M1.5–M1.8 continue next.
+
+**DO-178C folder:** `docs/compliance/DO-178C/A-2_Planning/` through `A-7_Verification_of_Outputs/`, each README-indexed against the real DO-178C Annex A tables, cross-referencing where the substance already lives (PRODUCT_REQUIREMENTS.md *is* the HLR set; RTM.md is the traceability matrix) and honestly marking what's genuinely not authored yet (PSAC, SDP, SQAP, LLRs — none exist before the first DAL C-equivalent module does). This operationalizes COMPLIANCE.md §A.3's already-stated plan rather than inventing new policy.
+
+**M1.3 — gateway/v1 gRPC services:** `command.proto`, `mission.proto`, `parameter.proto`, `telemetry_query.proto`, `log.proto`, `compliance.proto` — six services matching API_SPECIFICATION.md's REST resource map and async-command semantics. First `buf lint` run caught 15 `RPC_RESPONSE_STANDARD_NAME` violations (reusing a resource message directly as an RPC response, or reusing one response type across two RPCs) — fixed by wrapping every RPC response in its own message, the pattern buf's STANDARD ruleset expects. `buf lint`/`buf breaking` clean after the fix.
+
+**M1.4 — services/common runtime additions**, all real and unit-tested rather than stubbed: UUIDv7 (`uuid.h`), monotonic per-key sequencing (`sequence.h`), a structured JSON logger matching LOGGING.md §2's schema exactly (`logger.h/.cpp`), the layered config loader (`config.h/.cpp` — compiled defaults → file → env, a deliberately-restricted YAML-compatible subset rather than a new yaml-cpp dependency), Prometheus-format metrics (`metrics.h/.cpp`), a health-check registry (`health.h/.cpp`), and a dependency-free `GET /healthz` + `GET /metrics` HTTP listener over raw sockets (`health_metrics_server.h/.cpp`, Windows/POSIX both — chose not to pull in Drogon for two GET routes when no service exists yet to justify the framework).
+
+**The NATS JetStream client — honest gap, not a silent skip:** `jetstream.h` defines the `JetStreamPublisher`/`JetStreamConsumer` port (hexagonal pattern, same shape as the M0.3 service-template's `EventPublisher`); `in_memory_jetstream.h/.cpp` is a real, tested single-process adapter with redelivery simulation; `dedup.h` is a TTL dedup set matching DATABASE.md §6's Redis pattern. No adapter here talks to a real NATS server — vendoring `nats.c` (OpenSSL linkage, MinGW cross-platform build) is genuine unverified work that deserves its own timeboxed spike, the same judgment call ADR-0020 made for MapLibre Native Qt rather than attempting it blind and burning the session on a build-toolchain rabbit hole. M1.5/M1.6/M1.8 are scoped to talk to the real NATS server directly (CLI / Node.js / Python) specifically so M1 isn't blocked on that spike landing first.
+
+**Build notes:** `services/common` converted from a header-only `INTERFACE` library to a compiled `STATIC` one (six new `.cpp` files). Two real compile bugs caught and fixed by actually building rather than assuming: a missing `<cstdint>` include, and an ambiguous single-pair `ConfigStore({{...}})` constructor call in tests (GCC's brace-init overload resolution — worked around by explicitly typing the `unordered_map` at the call site) — plus one real test bug, not an implementation bug: a UUIDv7 ordering assertion that assumed strict ordering across calls with no time gap, which UUIDv7 doesn't promise (only ordering across distinct milliseconds is guaranteed). **9/9 tests green.**
+
+**Next:** M1.5 — JetStream stream provisioning against the real compose NATS instance.

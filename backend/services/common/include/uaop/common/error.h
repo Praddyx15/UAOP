@@ -1,6 +1,8 @@
 // uaop::common::Error — the boundary error value carried by Result<T, Error>.
-// Codes come from the platform registry (api/proto/errors.proto once generated, M1.2);
-// until codegen lands, services define their codes against this shape.
+// Codes come from the platform registry (api/proto/uaop/errors/v1/errors.proto,
+// landed M1.2); until C++ protobuf codegen is wired into the build, services
+// define their codes as plain strings against this shape, matching the
+// registry's ErrorCode names by convention.
 //
 // @req: UAOP-NFR-008  No exceptions on real-time paths; Result<T,E> pattern platform-wide
 
