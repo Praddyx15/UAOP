@@ -1,8 +1,8 @@
 # PROJECT_STRUCTURE
 
-**Version 0.1.4 · 2026-07-07 · The final, implementation-ready repository blueprint. Ownership rules and monorepo rationale: [REPOSITORY_STRUCTURE.md](../08_Developer_Handbook/REPOSITORY_STRUCTURE.md). ⊕ *directories* were created in the 2026-07-04 structure pass (review R2); ⊕ *files* (CMake presets, workflows, proto files, configs) land with milestone M0 code. ⚠ = frozen pending OQ-1.**
+**Version 0.1.5 · 2026-07-07 · The final, implementation-ready repository blueprint. Ownership rules and monorepo rationale: [REPOSITORY_STRUCTURE.md](../08_Developer_Handbook/REPOSITORY_STRUCTURE.md). ⊕ *directories* were created in the 2026-07-04 structure pass (review R2); ⊕ *files* (CMake presets, workflows, proto files, configs) land with milestone M0 code. ⚠ = frozen pending OQ-1.**
 
-**Changelog:** v0.1.2 records two directories populated ahead of schedule from the real FlightMD project (Review R4 / ADR-0018): `backend/services/parameter-engine/data/` (seed metadata) and `tests/data/sample_logs/` (fixture logs) — both below, no longer bare `⊕`. v0.1.3 (M1.1): `api/proto/buf.yaml`/`buf.gen.yaml` and `api/proto/uaop/telemetry/v1/` landed for real, no longer bare `⊕`. v0.1.4 (M1.2): `api/proto/uaop/events/v1/envelope.proto` landed; `errors.proto` moved to a versioned `errors/v1/` directory (buf lint requirement) and landed for real.
+**Changelog:** v0.1.2 records two directories populated ahead of schedule from the real FlightMD project (Review R4 / ADR-0018): `backend/services/parameter-engine/data/` (seed metadata) and `tests/data/sample_logs/` (fixture logs) — both below, no longer bare `⊕`. v0.1.3 (M1.1): `api/proto/buf.yaml`/`buf.gen.yaml` and `api/proto/uaop/telemetry/v1/` landed for real, no longer bare `⊕`. v0.1.4 (M1.2): `api/proto/uaop/events/v1/envelope.proto` landed; `errors.proto` moved to a versioned `errors/v1/` directory (buf lint requirement) and landed for real. v0.1.5: `docs/compliance/DO-178C/` populated with the A-2..A-7 Annex A table structure (README-indexed, each honestly marking what's authored vs pending) per COMPLIANCE.md §A.3's plan.
 
 ## 1. Top-level tree (complete)
 
@@ -68,7 +68,9 @@ uaop-platform/
 ├── docs/                            00_…08_ numbered living design system (this set)
 │   ├── 00_Project_Foundation/ … 08_Developer_Handbook/
 │   ├── api/ · architecture/ · scaling/ · context/phase-N/ (progress.md + validation evidence)
-│   └── compliance/DO-178C/ ⊕ · SORA/ ⊕ · {FAA,EASA,DGCA}/ ⊕
+│   └── compliance/DO-178C/ — A-2_Planning/ · A-3_Development/ · A-4_Verification/ · A-5_Configuration_Management/ ·
+│                              A-6_Quality_Assurance/ · A-7_Verification_of_Outputs/ (each README-indexed per Annex A table) · RTM.md (generated)
+│                              · SORA/ ⊕ · {FAA,EASA,DGCA}/ ⊕
 └── external-resources/              reference-only; excluded from build/packaging/licensing
 ```
 
