@@ -1,8 +1,8 @@
 # PROJECT_STRUCTURE
 
-**Version 0.1.6 · 2026-07-12 · The final, implementation-ready repository blueprint. Ownership rules and monorepo rationale: [REPOSITORY_STRUCTURE.md](../08_Developer_Handbook/REPOSITORY_STRUCTURE.md). ⊕ *directories* were created in the 2026-07-04 structure pass (review R2); ⊕ *files* (CMake presets, workflows, proto files, configs) land with milestone M0 code. ⚠ = frozen pending OQ-1.**
+**Version 0.1.7 · 2026-07-13 · The final, implementation-ready repository blueprint. Ownership rules and monorepo rationale: [REPOSITORY_STRUCTURE.md](../08_Developer_Handbook/REPOSITORY_STRUCTURE.md). ⊕ *directories* were created in the 2026-07-04 structure pass (review R2); ⊕ *files* (CMake presets, workflows, proto files, configs) land with milestone M0 code. ⚠ = frozen pending OQ-1.**
 
-**Changelog:** v0.1.2 records two directories populated ahead of schedule from the real FlightMD project (Review R4 / ADR-0018): `backend/services/parameter-engine/data/` (seed metadata) and `tests/data/sample_logs/` (fixture logs) — both below, no longer bare `⊕`. v0.1.3 (M1.1): `api/proto/buf.yaml`/`buf.gen.yaml` and `api/proto/uaop/telemetry/v1/` landed for real, no longer bare `⊕`. v0.1.4 (M1.2): `api/proto/uaop/events/v1/envelope.proto` landed; `errors.proto` moved to a versioned `errors/v1/` directory (buf lint requirement) and landed for real. v0.1.5: `docs/compliance/DO-178C/` populated with the A-2..A-7 Annex A table structure (README-indexed, each honestly marking what's authored vs pending) per COMPLIANCE.md §A.3's plan. v0.1.6 (M1.6): `backend/api-gateway/` landed for real — no longer bare `⊕`.
+**Changelog:** v0.1.2 records two directories populated ahead of schedule from the real FlightMD project (Review R4 / ADR-0018): `backend/services/parameter-engine/data/` (seed metadata) and `tests/data/sample_logs/` (fixture logs) — both below, no longer bare `⊕`. v0.1.3 (M1.1): `api/proto/buf.yaml`/`buf.gen.yaml` and `api/proto/uaop/telemetry/v1/` landed for real, no longer bare `⊕`. v0.1.4 (M1.2): `api/proto/uaop/events/v1/envelope.proto` landed; `errors.proto` moved to a versioned `errors/v1/` directory (buf lint requirement) and landed for real. v0.1.5: `docs/compliance/DO-178C/` populated with the A-2..A-7 Annex A table structure (README-indexed, each honestly marking what's authored vs pending) per COMPLIANCE.md §A.3's plan. v0.1.6 (M1.6): `backend/api-gateway/` landed for real — no longer bare `⊕`. v0.1.7 (M1.7/M1.8): `infrastructure/postgres/migrations/` and `tests/integration/idempotency/` landed for real.
 
 ## 1. Top-level tree (complete)
 
@@ -54,12 +54,15 @@ uaop-platform/
 │   └── tools/                       ⊕ rtm-generator/ · misra-config/ · audit-log-exporter/
 ├── infrastructure/
 │   ├── docker/compose/              compose.yaml · compose.sitl.yaml ⊕
+│   ├── postgres/migrations/         — M1.7: 10 numbered baseline files (schemas/roles, mission/param/audit/
+│   │                                  compliance/flightlog/vehicle/auth/node, telemetry hypertables) · tools/db-migrate.sh runner
 │   ├── kubernetes/                  ⊕ base/ · overlays/{edge,edge-airgap,cloud}/
 │   ├── terraform/                   ⊕ (Phase 4)
 │   └── monitoring/                  ⊕ prometheus/rules/ · grafana/dashboards/
 ├── tests/
 │   ├── sitl/                        harness/ ⊕ · suites/ ⊕ (VALIDATION.md matrix as code)
-│   ├── integration/                 ⊕ per-service, containerized deps
+│   ├── integration/                 — M1.8: idempotency/ (duplicate-delivery, gap-detection, out-of-order;
+│   │                                  Python/nats-py against real JetStream) landed; otherwise per-service, containerized deps ⊕
 │   ├── e2e/                         ⊕ golden-path GCS flows
 │   ├── hil/                         ⊕ (Phase 2 bench)
 │   ├── compliance/                  rtm/ · chain/ · annotations/ ⊕

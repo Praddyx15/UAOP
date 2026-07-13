@@ -249,3 +249,23 @@ Founder request: proceed through M1.3–M1.8, and set up a folder for HLR/LLR/DO
 **Docs updated:** IMPLEMENTATION_PLAN.md v0.2.10, PROJECT_STRUCTURE.md v0.1.6.
 
 **Next:** M1.7 — Postgres/Timescale schema baseline + migration harness.
+
+---
+
+## 2026-07-13 (session 6, cont'd) — M1.7, M1.8: M1 complete
+
+**M1.7 — Postgres/Timescale schema baseline:** `tools/db-migrate.sh` (idempotent runner, tracked in `public.schema_migrations`) + 10 numbered files under `infrastructure/postgres/migrations/`, covering all 9 DATABASE.md §2 schemas: `mission`/`param`/`compliance`/`flightlog`/`vehicle` with per-service DB roles (schema-scoped grants only, per DATA_FLOW.md §5's ownership matrix — a role never touches a schema it doesn't own); `audit.chain` as a partitioned, append-only table with a BEFORE INSERT trigger enforcing hash-chain continuity in the database itself, not just trusted to the application; `auth`/`node` schemas created but deliberately left ungranted (no owning service exists in PROJECT_STRUCTURE.md's list yet — an honest gap, not a guessed role name); and all 13 telemetry hypertables, column-for-column matching the M1.1 proto census, with 1h chunking, 24h compression policy, and 4 representative continuous aggregates (position/attitude/battery/health).
+
+Run for real against the live compose Postgres/TimescaleDB, not just written and assumed correct. One genuine bug: `CURRENT_DATE + INTERVAL '1 month'` in Postgres returns a `timestamp`, not a `DATE` — broke a partition-creation function expecting `DATE`, fixed with an explicit `::DATE` cast. Everything else (10 migrations, ~30 tables, the compression DO-loop, the continuous aggregates) applied clean on the first real run after that one fix.
+
+**Verified the audit chain trigger actually works**, not just that it compiles: inserted a valid first entry (`prev_hash` NULL), then a deliberately broken second entry (wrong `prev_hash`) — rejected with the expected integrity-violation error — then a correctly-chained third entry, which succeeded. Exactly the behavior ADR-0015/COMPLIANCE.md §B.3 require, proven against a live database rather than asserted from the DDL alone.
+
+**M1.8 — idempotency test harness:** `tests/integration/idempotency/` (Python, `nats-py`, pytest-asyncio) against the real M1.5-provisioned streams — duplicate-delivery (JetStream's own `Nats-Msg-Id` dedup window, asserted via `PubAck.duplicate`), gap-detection (publish app-level sequence 1,2,3,5, assert a consumer locates the missing 4), and out-of-order (publish 3,1,2, assert delivery arrives in *publish* order rather than *sorted* order — proving why EVENT_FLOW.md §3's "order by the envelope's sequence" rule exists at all).
+
+**A real, non-obvious bug**, found by writing a standalone diagnostic script rather than guessing at the failure from pytest's traceback alone: all four `pull_subscribe`-based tests came back with zero messages, no exception, no timeout — `fetch()` just returned `[]`. The diagnostic (`js.stream_info` right after publishing) showed `StreamState(messages=0, ...)`: the messages had already been discarded. Cause: TELEMETRY is provisioned with **interest-based retention** (EVENT_FLOW.md §2, `--retention=interest` in `provision-streams.sh`) — a message with no registered consumer interest at publish time is eligible for immediate removal. The tests published first and created the durable consumer after, which is exactly backwards for that retention policy; real services never hit this because telemetry-engine's durable consumer is already running before any vehicle ever publishes. Fixed by subscribing before publishing in both affected test files — runtime dropped from 40s (three tests each waiting out a full 10s fetch timeout against an empty stream) to 0.14s once messages were actually being delivered. **6/6 tests green** after the fix.
+
+**M1 — Definition of Done: fully met.** All eight tasks (M1.1–M1.8) complete, every one verified against real infrastructure (NATS, Redis, Postgres/TimescaleDB, and a real gRPC server standing in for vehicle-manager) rather than mocks — this session alone surfaced and fixed five genuine bugs (a Postgres type-coercion gotcha, an interest-retention test-ordering bug, a Node test-runner flag misunderstanding, a copy-paste path-depth bug, and the earlier buf lint RPC-naming violations) purely by actually running things instead of trusting the code on inspection. Two documented, deliberate gaps carry forward: the real NATS C++ client (M1.4) and AUDIT's true always-fsync guarantee (M1.5) — both real follow-up work, not silently dropped.
+
+**Docs updated:** IMPLEMENTATION_PLAN.md v0.2.11 (M1 DoD marked met), PROJECT_STRUCTURE.md v0.1.7.
+
+**Next:** M2 — First telemetry vertical slice (the credibility milestone).
