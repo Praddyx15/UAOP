@@ -1,0 +1,25 @@
+{
+  "name": "@uaop/api-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "description": "UAOP api-gateway v0 (ADR-0004): REST/JWT + WebSocket streams + gRPC forwarding to gateway/v1 services.",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.12.5",
+    "@grpc/proto-loader": "^0.7.13",
+    "express": "^4.21.2",
+    "google-proto-files": "^4.2.0",
+    "ioredis": "^5.4.2",
+    "jsonwebtoken": "^9.0.2",
+    "nats": "^2.29.1",
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
