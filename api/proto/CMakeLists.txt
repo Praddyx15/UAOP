@@ -25,6 +25,7 @@ if(NOT Protobuf_FOUND)
 endif()
 
 set(UAOP_PROTO_AVAILABLE TRUE PARENT_SCOPE)
+message(STATUS "api/proto: Protobuf ${Protobuf_VERSION} found -- building uaop::proto")
 
 set(UAOP_PROTO_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(UAOP_PROTO_GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
