@@ -26,6 +26,14 @@ endif()
 
 include(CTest)
 
+# uaop::proto (ADR-0021) — protobuf codegen for platform contracts. Local
+# Windows/MinGW dev may not have protobuf available; CI (apt-installed)
+# always does. Anything needing uaop::proto checks UAOP_PROTO_AVAILABLE.
+add_subdirectory(api/proto)
+if(NOT UAOP_PROTO_AVAILABLE)
+    set(UAOP_PROTO_AVAILABLE FALSE)
+endif()
+
 if(UAOP_BUILD_SERVICES)
     add_subdirectory(backend/services/common)
 endif()
@@ -33,6 +41,9 @@ endif()
 if(UAOP_BUILD_TEMPLATE)
     add_subdirectory(tools/service-template)
 endif()
+
+# middleware/mavlink-bridge (M2.1) links uaop::proto once its own
+# CMakeLists.txt lands — not yet, so nothing to add_subdirectory here.
 
 if(UAOP_BUILD_GCS)
     add_subdirectory(frontend/qt-desktop-gcs)

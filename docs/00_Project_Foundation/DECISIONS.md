@@ -1,6 +1,6 @@
 # DECISIONS — Architecture Decision Records
 
-**Version 0.1.5 · 2026-07-07 · 20 ADRs, 6 reviews (R1–R6) to date.**
+**Version 0.1.6 · 2026-07-13 · 21 ADRs, 6 reviews (R1–R6) to date.**
 
 Format: lightweight ADR (Status · Context · Decision · Alternatives rejected · Consequences). New technology enters the stack only through an ADR. Statuses: `ACCEPTED`, `PROPOSED`, `SUPERSEDED(by)`, `OPEN`.
 
@@ -255,6 +255,16 @@ Trigger: founder proposal to lift-and-refine code from five ecosystem repos for 
 4. **`MapConfig.source` is unaffected** (ADR-0008 already enumerated `mbtiles_local` in that interface) — swapping the renderer later is a registered-panel swap behind the same contract, not an architecture change.
 **Alternatives rejected:** forcing the prebuilt MapLibre binary against a mismatched Qt minor version (silent ABI risk, deferred failure); downgrading the whole Qt kit to 6.7 to match (loses Qt 6.11 improvements platform-wide for one dependency); building MapLibre Native Qt from source now (real option, but belongs to a dedicated, timeboxed spike of its own — tracked below, not absorbed into M0).
 **Consequences:** UAOP does not depend on MapLibre Native Qt building successfully before Phase 1 can proceed. The real offline-basemap story (OpenStreetMap-derived MBTiles/PMTiles packages, vector styling, GeoJSON overlays) still belongs to MapLibre and lands at **M2.7** (full map panel) — this interim renderer is deliberately raster-only and does not attempt vector cartography (the custom-Canvas-radar "dead end" ADR-0008 already rejected was specifically about vector map ambition; a bounded raster tile pyramid is a different, well-precedented scope). **Follow-up scheduled, not forgotten:** re-attempt MapLibre Native Qt either when a prebuilt binary matches the project's Qt minor version, or as its own timeboxed source-build spike — tracked as a bench-task candidate (IMPLEMENTATION_PLAN.md §2) alongside the FlightMD real-log-corpus/Git-LFS item from ADR-0018.
+
+## ADR-0021 — C++ protobuf codegen: standard Google protobuf via CMake, not QtProtobuf
+**Status: ACCEPTED · 2026-07-13**
+**Context:** M2.1 (`mavlink-bridge`) is the first C++ service that must actually construct and wire-serialize `uaop.telemetry.v1.VehicleTelemetry` messages — M1 deliberately deferred wiring C++ protobuf codegen into the CMake build (no consumer needed it yet). Qt 6.7+ ships **QtProtobuf**/**QtGrpc** as official modules with native `qt_add_protobuf` CMake integration, already present in the local Qt 6.11.1 kit the GCS depends on.
+**Decision:** Use **standard Google protobuf** (`libprotobuf` + `protoc`), not QtProtobuf, for every non-GCS C++ service. QtProtobuf messages are `QObject`-derived and serialize through Qt's own runtime (`QtProtobuf::Message`, property system) — adopting it in `mavlink-bridge`, `telemetry-engine`, etc. would pull **Qt Core** into every backend microservice's dependency graph merely to speak a wire format, for services that are otherwise plain C++17/Drogon with no UI concern whatsoever (MASTER_CONTEXT's stack lock treats "backend services" and "Qt/QML GCS" as two deliberately separate tiers). Standard protobuf's generated classes have no such coupling and are what every other language binding in this system (Node's `@grpc/proto-loader`, Python's forthcoming `ai-engine`) already speaks natively — one wire-format toolchain family across the whole polyglot backend, Qt reserved for the GCS's own internal object model as originally scoped.
+**Toolchain split by environment, verified rather than assumed to be symmetric:**
+- **CI (Ubuntu):** `apt-get install protobuf-compiler libprotobuf-dev`, then CMake's `find_package(Protobuf REQUIRED)` — fast, produces proper CMake config files, the standard low-risk path on Linux.
+- **Local dev (Windows/MinGW):** no equivalent system package exists for this exact MinGW/GCC-13 ABI; `FetchContent`-building protobuf from source is the fallback, attempted for real (not assumed to work) — see progress.md for the outcome of that attempt.
+**Alternatives rejected:** QtProtobuf/QtGrpc (Qt-coupling into headless backend services, rejected above); gRPC C++ end-to-end now (ADR-0005 already scopes gRPC to command/query, not eventing — `mavlink-bridge`'s NATS-publish path only needs message *serialization*, not RPC; gRPC C++ vendoring is deferred to whichever M3 task first needs a real C++ gRPC client/server, on the same "wire it when something actually needs it" discipline this ADR itself follows).
+**Consequences:** Every future C++ backend service links the same `uaop::proto` codegen target instead of each reinventing its own protobuf build; CI and local dev may drift in how the toolchain is provisioned (apt vs. FetchContent) — acceptable since CMake's `find_package(Protobuf)`/generated-target interface is identical either way, so service code never sees the difference.
 
 ## Review R6 — M0.7 map spike · 2026-07-07
 
