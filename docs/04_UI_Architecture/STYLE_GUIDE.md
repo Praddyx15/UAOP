@@ -24,14 +24,14 @@ Instrument, not application. Dark, low-glare, high-contrast, restrained. Color i
 | Token | Value | Meaning |
 |---|---|---|
 | `warn-red` | `#E5484D` | WARNING fills, armed strip, map marks; failsafe; breach; loss |
-| `warn-red-text` | `#F58A8E` | WARNING **text**. `#E5484D` on `bg0` is only 4.9:1, under the 7:1 alert-text rule below; `#F58A8E` is 8.2:1 (7.0:1 on `bg2`) |
+| `warn-red-text` | `#F79A9D` | WARNING **text**. `#E5484D` on `bg0` is only 4.9:1, under the 7:1 alert-text rule below; `#F79A9D` is 9.3:1 on `bg0`, 8.7:1 on `bg1`, 7.9:1 on `bg2`. (The first pick, `#F58A8E`, came out at 6.96:1 on `bg2` once the token test measured it.) Light theme: `#991B1B`, 7.9 / 8.3 / 7.6:1 |
 | `caution-amber` | `#F5A524` | CAUTION; degradation |
 | `advisory-cyan` | `#4CC2D9` | ADVISORY; informational state |
 | `ok-green` | `#3DBB7C` | Nominal / pass — used for *state*, never decoration |
 | `armed-strip` | `#E5484D` on `#3A0D0F` | Armed condition strip (persistent while armed) |
 | `sim-violet` | `#8B7EC8` | Sim/replay watermark family — reserved exclusively; nothing else may be violet |
 
-Rules: semantic colors never appear in charts as series colors (chart palette is a separate hue-distinct ramp: `#5B8DEF #E0A458 #7CC7A6 #C77CA6 #8FA35C #6BB8C4`); red/amber/green reserve their meanings absolutely (a red chart line implying nothing wrong is a defect); all foreground-on-background pairs ≥ 4.5:1 contrast (7:1 for alert text), verified by a token unit test, not eyeballs.
+Rules: semantic colors never appear in charts as series colors (chart palette is a separate hue-distinct ramp: `#5B8DEF #E0A458 #7CC7A6 #C77CA6 #8FA35C #6BB8C4`); red/amber/green reserve their meanings absolutely (a red chart line implying nothing wrong is a defect); all foreground-on-background pairs ≥ 4.5:1 contrast (7:1 for alert text), verified by a token unit test, not eyeballs (`tests/unit/test_suite_tokens.py`, both themes, against `bg0`/`bg1`/`bg2`). The QML colour values are generated from `SUITE_TOKENS.json` by `tools/gen_theme_tokens.py`; edit the JSON, never the generated block in `Theme.qml`.
 
 ## 3. Typography
 
