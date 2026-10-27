@@ -108,6 +108,7 @@ Table columns: **ID** · **Task (deliverable folded in)** · **Effort** (focus-d
 - **M0 Definition of Done: fully met. All eight M0 tasks complete.** M1 (contracts and platform plumbing) is unblocked.
 - **Estimate calibration signal (feeds M2.10):** M0.1/2/3/5/8 ≈ 5.5 estimated focus-days landed in ~1 session — AI-assisted authoring compresses scaffolding-class work dramatically; do **not** extrapolate to integration-class work (SITL, protocol state machines) where verification, not authoring, dominates.
 - **Pre-M1 bench task** *(2026-07-07 session 4)*: Poppins bundled as the GCS UI font (founder decision, replacing the Inter/system-fallback placeholder) — 8 static faces embedded as Qt resources, `Theme.qml` weight/font tokens updated, STYLE_GUIDE.md v0.1.1. Not on the WBS; see progress.md for detail.
+- **Suite re-theme** *(2026-10-27)*: Geist + Geist Mono replace Poppins/Consolas, accent aligned to `#3B82F6`, `warnRedText #F58A8E` for alert text, shared `SUITE_TOKENS.json` with FlightMD and AeroAtlas. STYLE_GUIDE.md v0.2.0.
 
 ### M1 — Contracts and platform plumbing
 

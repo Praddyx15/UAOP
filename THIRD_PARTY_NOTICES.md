@@ -5,7 +5,7 @@ Provenance register for code, data, and assets embedded in `uaop-platform` under
 | Source | License | What was taken | Where it lives |
 |---|---|---|---|
 | [github.com/Praddyx15/FlightMD](https://github.com/Praddyx15/FlightMD) | MIT © Pradum Behl | Sample flight-log test fixtures (6 files, 3 formats) + generator script; PX4 v1.13/v1.14 parameter defaults + safe-range JSON | `tests/data/sample_logs/` · `backend/services/parameter-engine/data/` |
-| [github.com/itfoundry/Poppins](https://github.com/itfoundry/Poppins) (via [google/fonts](https://github.com/google/fonts/tree/main/ofl/poppins)) | SIL Open Font License 1.1 © 2020 The Poppins Project Authors | 8 static font faces (Light/Regular/Medium/Bold × upright/italic), embedded as Qt resources | `frontend/qt-desktop-gcs/resources/fonts/Poppins/` (license text: `OFL.txt` in the same directory) |
+| [github.com/vercel/geist-font](https://github.com/vercel/geist-font) | SIL Open Font License 1.1 © 2023 Vercel, in collaboration with basement.studio | Geist (8 static faces: Light/Regular/Medium/Bold × upright/italic) and Geist Mono (Regular/Medium/Bold), embedded as Qt resources | `frontend/qt-desktop-gcs/resources/fonts/Geist/` (license text: `OFL.txt` in the same directory) |
 
 Planned (per ADR-0019, entries added at port time): PX4-Autopilot parameter/airframe metadata (BSD-3-Clause); QGroundControl MissionManager/ParameterManager state-machine logic under its Apache-2.0 option (per-file verified).
 

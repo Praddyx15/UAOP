@@ -25,21 +25,23 @@ qt_add_executable(uaop_gcs
 
 target_include_directories(uaop_gcs PRIVATE src)
 
-# Poppins (SIL OFL 1.1 — resources/fonts/Poppins/OFL.txt, THIRD_PARTY_NOTICES.md) embedded
-# as Qt resources so it renders identically offline/air-gapped — never a loose-file/system
-# font dependency (STYLE_GUIDE.md §3).
+# Geist / Geist Mono (OFL 1.1, resources/fonts/Geist/OFL.txt) compiled in as resources,
+# so nothing depends on what fonts the host has (STYLE_GUIDE.md §3).
 qt_add_resources(uaop_gcs "fonts"
     PREFIX "/fonts"
-    BASE "resources/fonts/Poppins"
+    BASE "resources/fonts/Geist"
     FILES
-        resources/fonts/Poppins/Poppins-Light.ttf
-        resources/fonts/Poppins/Poppins-LightItalic.ttf
-        resources/fonts/Poppins/Poppins-Regular.ttf
-        resources/fonts/Poppins/Poppins-Italic.ttf
-        resources/fonts/Poppins/Poppins-Medium.ttf
-        resources/fonts/Poppins/Poppins-MediumItalic.ttf
-        resources/fonts/Poppins/Poppins-Bold.ttf
-        resources/fonts/Poppins/Poppins-BoldItalic.ttf
+        resources/fonts/Geist/Geist-Light.ttf
+        resources/fonts/Geist/Geist-LightItalic.ttf
+        resources/fonts/Geist/Geist-Regular.ttf
+        resources/fonts/Geist/Geist-Italic.ttf
+        resources/fonts/Geist/Geist-Medium.ttf
+        resources/fonts/Geist/Geist-MediumItalic.ttf
+        resources/fonts/Geist/Geist-Bold.ttf
+        resources/fonts/Geist/Geist-BoldItalic.ttf
+        resources/fonts/Geist/GeistMono-Regular.ttf
+        resources/fonts/Geist/GeistMono-Medium.ttf
+        resources/fonts/Geist/GeistMono-Bold.ttf
 )
 
 # Interim MBTiles renderer points at the small synthetic test tile set

@@ -13,10 +13,11 @@ QtObject {
     readonly property color fg0: "#E6EAEE"          // primary text/values
     readonly property color fg1: "#9AA5B1"          // labels, units
     readonly property color fg2: "#5C6773"          // disabled, hints
-    readonly property color accentColor: "#3B82C4"  // focus/selection only
+    readonly property color accentColor: "#3B82F6"  // focus/selection only, same blue as FlightMD/AeroAtlas
 
     // ── Semantic (aviation-standard meanings — never repurposed) ────────────
-    readonly property color warnRed: "#E5484D"
+    readonly property color warnRed: "#E5484D"      // fills, armed strip, map marks
+    readonly property color warnRedText: "#F58A8E"  // E5484D is only 4.9:1 on bg0, alert text needs 7:1
     readonly property color cautionAmber: "#F5A524"
     readonly property color advisoryCyan: "#4CC2D9"
     readonly property color okGreen: "#3DBB7C"
@@ -32,12 +33,10 @@ QtObject {
     readonly property int panelHeaderHeight: 26
 
     // ── Typography (STYLE_GUIDE §3) ──────────────────────────────────────────
-    // Poppins — bundled as an embedded Qt resource (SIL OFL 1.1, 8 static faces
-    // loaded in main.cpp), never a system-font dependency. All UI text uses it;
-    // numeric telemetry values stay monospace for tabular alignment (unchanged
-    // rationale — mono font itself is still a system fallback, tracked separately).
-    readonly property string uiFontFamily: "Poppins"
-    readonly property string monoFontFamily: "Consolas"  // TODO: bundle JetBrains Mono (separate from this Poppins pass)
+    // Geist + Geist Mono, bundled as Qt resources (OFL, loaded in main.cpp) so the
+    // GCS looks the same offline. Mono for every live value so digits line up.
+    readonly property string uiFontFamily: "Geist"
+    readonly property string monoFontFamily: "Geist Mono"
 
     // Base weight/style building blocks — combine via Qt.font() where a
     // one-off size/spacing is needed; the named tokens below cover the

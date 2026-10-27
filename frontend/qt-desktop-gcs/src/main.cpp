@@ -45,15 +45,16 @@ void registerWorkspaces(uaop::gcs::WorkspaceManager& manager) {
     manager.addWorkspace({"REVIEW", {{{"compliance"}, 1}, {{"flight"}, 2}}});
 }
 
-// Poppins, embedded via qt_add_resources (SIL OFL 1.1 — resources/fonts/Poppins/OFL.txt).
-// All 8 static faces are registered under the same family name; Qt's font matcher then
-// picks the closest face for a requested weight/italic combo (STYLE_GUIDE.md §3).
+// Faces registered under their family names ("Geist", "Geist Mono"); Qt picks the
+// closest face for a weight/italic request.
 void loadBundledFonts() {
-    static constexpr std::array<const char*, 8> kFaces = {
-        ":/fonts/Poppins-Light.ttf",       ":/fonts/Poppins-LightItalic.ttf",
-        ":/fonts/Poppins-Regular.ttf",     ":/fonts/Poppins-Italic.ttf",
-        ":/fonts/Poppins-Medium.ttf",      ":/fonts/Poppins-MediumItalic.ttf",
-        ":/fonts/Poppins-Bold.ttf",        ":/fonts/Poppins-BoldItalic.ttf",
+    static constexpr std::array<const char*, 11> kFaces = {
+        ":/fonts/Geist-Light.ttf",       ":/fonts/Geist-LightItalic.ttf",
+        ":/fonts/Geist-Regular.ttf",     ":/fonts/Geist-Italic.ttf",
+        ":/fonts/Geist-Medium.ttf",      ":/fonts/Geist-MediumItalic.ttf",
+        ":/fonts/Geist-Bold.ttf",        ":/fonts/Geist-BoldItalic.ttf",
+        ":/fonts/GeistMono-Regular.ttf", ":/fonts/GeistMono-Medium.ttf",
+        ":/fonts/GeistMono-Bold.ttf",
     };
     for (const char* path : kFaces) {
         if (QFontDatabase::addApplicationFont(QString::fromLatin1(path)) == -1) {
