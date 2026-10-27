@@ -87,6 +87,7 @@ Global rules (apply to every service; not repeated below):
 - **Recovery:** content addressing makes every transfer idempotent.
 - **Security:** logs are evidence — immutable objects, hash-verified on every read.
 - **Scalability:** MinIO scales horizontally in cloud tier; edge retention by policy.
+- **Analysis sidecar (Python/FastAPI, ADR-0022, `analysis-sidecar/`):** runs FlightMD's `flightmd-core` on captured logs (no AIEnhancer, ascent-profile findings filtered) and serves `ListFlightReports`/`GetFlightReport` (log.proto) as JSON to the GCS post-mission panel; consumes `uaop.event.v1.param.written` and reports FlightMD-recommended writes back to a self-hosted FlightMD (`POST /airframe/{label}/changes`, `applied_by: "uaop"`), off unless configured. Reports are files under its data dir until M5.2's library lands.
 
 ## compliance-engine (C++/Python · Phase 1)
 

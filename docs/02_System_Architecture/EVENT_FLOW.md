@@ -58,7 +58,7 @@ message EventEnvelope {
 | `failsafe.triggered` | vehicle-manager | audit-critical; reason from FC failsafe bits |
 | `mission.uploaded / verified / diverged / progress` | mission-engine | uploaded carries plan hash |
 | `geofence.uploaded / breach` | mission-engine / vehicle-manager | breach is audit-critical |
-| `param.written / write_failed` | parameter-engine | old/new/operator/risk class |
+| `param.written / write_failed` | parameter-engine | old/new/operator/risk class; written carries the FlightMD recommendation it applied, if any (`events/v1/param.proto`, ADR-0022); flight-log-engine consumes it |
 | `remoteid.broadcast_ok / broadcast_lost` | remote-id | lost = master caution |
 | `log.captured / analysis_complete` | flight-log-engine / ai-engine | |
 | `ai.recommendation_{shown,applied,dismissed}` | gateway/UI relay | closes the advisory audit loop (ADR-0012) |

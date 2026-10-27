@@ -76,6 +76,16 @@ message WriteParameterRequest {
   string name = 2;
   ParameterValue value = 3;
   bool high_risk_acknowledged = 4; // must be true when the parameter's RiskClass is HIGH
+  // Set when the operator applies a FlightMD recommendation from the post-mission
+  // panel; parameter-engine copies it into the param.written audit event and
+  // flight-log-engine reports the change back to FlightMD (ADR-0022).
+  FlightmdRecommendation recommendation = 5;
+}
+
+message FlightmdRecommendation {
+  string report_id = 1;
+  string airframe_label = 2;
+  string finding_id = 3;
 }
 
 message WriteParameterResponse {

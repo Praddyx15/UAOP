@@ -19,6 +19,8 @@ jobs:
       - run: python tools/ci/check_doc_links.py
       - run: python tools/ci/check_licenses.py
       - run: python compliance/tools/rtm-generator/rtm_gen.py --check
+      - run: python tools/gen_theme_tokens.py --check
+      - run: pip install pytest && python -m pytest tests/unit -q
 
   proto-contract:
     name: proto contract (buf lint + breaking)

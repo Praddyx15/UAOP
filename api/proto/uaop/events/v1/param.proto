@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package uaop.events.v1;
+
+// Payload of `uaop.event.v1.param.written` (EVENT_FLOW.md §5), envelope schema
+// "uaop.event.param.written/1". Emitted by parameter-engine after the FC ACK and
+// read-back; it is the audit record of the write (old/new/operator/risk class).
+message ParamWritten {
+  string vehicle_id = 1;
+  string name = 2;
+  double old_value = 3;   // int32 parameters fit a double exactly
+  double new_value = 4;
+  string operator_id = 5;
+  string risk_class = 6;  // LOW | MEDIUM | HIGH, as gateway.v1.RiskClass without the prefix
+  // Present only when the write applied a FlightMD recommendation (ADR-0022).
+  RecommendationSource recommendation = 7;
+}
+
+message RecommendationSource {
+  string flightmd_report_id = 1;
+  string airframe_label = 2;
+  string finding_id = 3;
+}

@@ -5,6 +5,7 @@ Provenance register for code, data, and assets embedded in `uaop-platform` under
 | Source | License | What was taken | Where it lives |
 |---|---|---|---|
 | [github.com/Praddyx15/FlightMD](https://github.com/Praddyx15/FlightMD) | MIT © Pradum Behl | Sample flight-log test fixtures (6 files, 3 formats) + generator script; PX4 v1.13/v1.14 parameter defaults + safe-range JSON | `tests/data/sample_logs/` · `backend/services/parameter-engine/data/` |
+| [`flightmd-core`](https://github.com/Praddyx15/FlightMD) (PyPI package, not vendored) | MIT © Pradum Behl | Runtime dependency of flight-log-engine's analysis sidecar, pinned `>=1.1,<2` (ADR-0022). Its own dependencies install with it: pyulog (BSD-3-Clause), numpy/scipy/pandas (BSD-3-Clause), pydantic (MIT), pymavlink (LGPL-3.0, unmodified and separately installed, see ADR-0022) | `backend/services/flight-log-engine/analysis-sidecar/requirements.txt` |
 | [github.com/vercel/geist-font](https://github.com/vercel/geist-font) | SIL Open Font License 1.1 © 2023 Vercel, in collaboration with basement.studio | Geist (8 static faces: Light/Regular/Medium/Bold × upright/italic) and Geist Mono (Regular/Medium/Bold), embedded as Qt resources | `frontend/qt-desktop-gcs/resources/fonts/Geist/` (license text: `OFL.txt` in the same directory) |
 
 Planned (per ADR-0019, entries added at port time): PX4-Autopilot parameter/airframe metadata (BSD-3-Clause); QGroundControl MissionManager/ParameterManager state-machine logic under its Apache-2.0 option (per-file verified).
