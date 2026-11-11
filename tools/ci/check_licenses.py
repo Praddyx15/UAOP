@@ -37,7 +37,7 @@ def main() -> int:
         for p in base.rglob("*"):
             if not p.is_file() or p.suffix.lower() not in CODE_EXT or p.name in SKIP_NAMES:
                 continue
-            if "build" in p.parts or "__pycache__" in p.parts:
+            if any(part in {".venv", "venv", "node_modules", "build", "__pycache__"} for part in p.parts):
                 continue
             try:
                 text = p.read_text(encoding="utf-8", errors="replace")

@@ -39,7 +39,7 @@ def scan() -> list[dict]:
         for p in base.rglob("*"):
             if not p.is_file() or p.suffix.lower() not in CODE_EXT:
                 continue
-            if "build" in p.parts or "__pycache__" in p.parts:
+            if any(part in {".venv", "venv", "node_modules", "build", "__pycache__"} for part in p.parts):
                 continue
             for lineno, line in enumerate(
                     p.read_text(encoding="utf-8", errors="replace").splitlines(), 1):

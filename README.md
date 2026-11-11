@@ -74,4 +74,6 @@ Full rationale: [REPOSITORY_STRUCTURE.md](docs/08_Developer_Handbook/REPOSITORY_
 
 ---
 
+Part of the UAV suite: [FlightMD](https://github.com/Praddyx15/FlightMD) (flight-log analysis, runs inside UAOP's flight-log-engine, ADR-0022) · AeroAtlas (geospatial pre-flight evidence) · UAOP. The suite name is a placeholder; in the GCS it is `SUITE_NAME` in `frontend/qt-desktop-gcs/src/core/Suite.h`.
+
 *This repository is in the documentation-baseline stage. Implementation begins only after the Phase 1 validation gate in [ROADMAP.md](docs/00_Project_Foundation/ROADMAP.md) is agreed.*

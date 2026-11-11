@@ -36,6 +36,7 @@ set(UAOP_PROTO_FILES
     uaop/telemetry/v1/snapshot.proto
     uaop/telemetry/v1/delta.proto
     uaop/events/v1/envelope.proto
+    uaop/events/v1/param.proto
     uaop/errors/v1/errors.proto
 )
 

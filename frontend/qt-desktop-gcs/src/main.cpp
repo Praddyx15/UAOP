@@ -12,11 +12,17 @@
 
 #include "TelemetryController.h"
 #include "core/PanelRegistry.h"
+#include "core/Suite.h"
 #include "core/WorkspaceManager.h"
 #include "map/MbtilesProvider.h"
+#include "models/FlightReportsModel.h"
 
 #ifndef UAOP_MBTILES_PATH
 #define UAOP_MBTILES_PATH ""
+#endif
+
+#ifndef UAOP_FLIGHT_LOG_URL_DEFAULT
+#define UAOP_FLIGHT_LOG_URL_DEFAULT "http://127.0.0.1:8095"
 #endif
 
 namespace {
@@ -35,6 +41,7 @@ void registerPanels(uaop::gcs::PanelRegistry& registry) {
     registry.registerPanel({"mission", "MISSION", "views/mission/MissionView.qml", 400, 320});
     registry.registerPanel({"compliance", "PRE-FLIGHT COMPLIANCE", "views/compliance/ComplianceView.qml", 360, 320});
     registry.registerPanel({"map", "MAP", "components/MapView.qml", 400, 320});
+    registry.registerPanel({"post-mission", "POST-MISSION", "views/logs/PostMissionView.qml", 520, 320});
     // DefenceView.qml stays on disk but unregistered: defense features are
     // Phase 4+ scope (Review R2/F13) — a parked view, not a shipped panel.
 }
@@ -42,18 +49,19 @@ void registerPanels(uaop::gcs::PanelRegistry& registry) {
 void registerWorkspaces(uaop::gcs::WorkspaceManager& manager) {
     manager.addWorkspace({"FLIGHT OPS",
                           {{{"flight"}, 3}, {{"map"}, 2}, {{"mission", "compliance"}, 2}}});
-    manager.addWorkspace({"REVIEW", {{{"compliance"}, 1}, {{"flight"}, 2}}});
+    manager.addWorkspace({"REVIEW", {{{"compliance"}, 1}, {{"post-mission", "flight"}, 2}}});
 }
 
-// Poppins, embedded via qt_add_resources (SIL OFL 1.1 — resources/fonts/Poppins/OFL.txt).
-// All 8 static faces are registered under the same family name; Qt's font matcher then
-// picks the closest face for a requested weight/italic combo (STYLE_GUIDE.md §3).
+// Faces registered under their family names ("Geist", "Geist Mono"); Qt picks the
+// closest face for a weight/italic request.
 void loadBundledFonts() {
-    static constexpr std::array<const char*, 8> kFaces = {
-        ":/fonts/Poppins-Light.ttf",       ":/fonts/Poppins-LightItalic.ttf",
-        ":/fonts/Poppins-Regular.ttf",     ":/fonts/Poppins-Italic.ttf",
-        ":/fonts/Poppins-Medium.ttf",      ":/fonts/Poppins-MediumItalic.ttf",
-        ":/fonts/Poppins-Bold.ttf",        ":/fonts/Poppins-BoldItalic.ttf",
+    static constexpr std::array<const char*, 11> kFaces = {
+        ":/fonts/Geist-Light.ttf",       ":/fonts/Geist-LightItalic.ttf",
+        ":/fonts/Geist-Regular.ttf",     ":/fonts/Geist-Italic.ttf",
+        ":/fonts/Geist-Medium.ttf",      ":/fonts/Geist-MediumItalic.ttf",
+        ":/fonts/Geist-Bold.ttf",        ":/fonts/Geist-BoldItalic.ttf",
+        ":/fonts/GeistMono-Regular.ttf", ":/fonts/GeistMono-Medium.ttf",
+        ":/fonts/GeistMono-Bold.ttf",
     };
     for (const char* path : kFaces) {
         if (QFontDatabase::addApplicationFont(QString::fromLatin1(path)) == -1) {
@@ -77,6 +85,12 @@ int main(int argc, char* argv[]) {
     loadBundledFonts();
 
     TelemetryController telemetryController;
+    // TODO(M5.5): go through api-gateway once the GCS has a gateway session; until
+    // then the sidecar is read directly on loopback
+    const QString flightLogUrl = qEnvironmentVariableIsSet("UAOP_FLIGHT_LOG_URL")
+                                     ? qEnvironmentVariable("UAOP_FLIGHT_LOG_URL")
+                                     : QStringLiteral(UAOP_FLIGHT_LOG_URL_DEFAULT);
+    uaop::gcs::models::FlightReportsModel flightReports{QUrl(flightLogUrl)};
     uaop::gcs::PanelRegistry panelRegistry;
     uaop::gcs::WorkspaceManager workspaceManager;
     registerPanels(panelRegistry);
@@ -87,6 +101,8 @@ int main(int argc, char* argv[]) {
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("telemetryController", &telemetryController);
+    engine.rootContext()->setContextProperty("flightReports", &flightReports);
+    engine.rootContext()->setContextProperty("suiteName", QString::fromUtf8(uaop::gcs::SUITE_NAME));
     // Interim MBTiles renderer (ADR-0020); engine takes ownership of the provider.
     engine.addImageProvider("mbtiles", new uaop::gcs::map::MbtilesProvider(
                                            QStringLiteral(UAOP_MBTILES_PATH)));

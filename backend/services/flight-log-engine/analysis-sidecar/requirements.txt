@@ -1,0 +1,7 @@
+# flightmd-core is on PyPI once 1.1 is published; until then install it from the
+# FlightMD repo (README.md here) and keep this pin.
+flightmd-core>=1.1,<2
+fastapi>=0.115
+uvicorn>=0.30
+nats-py>=2.15.0
+protobuf>=5.26

@@ -88,14 +88,14 @@ ApplicationWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.left: parent.left; anchors.leftMargin: 7
                         width: 8; height: 8; radius: 4
-                        color: telemetryController.readyToFly ? theme.okGreen : theme.warnRed
+                        color: telemetryController.readyToFly ? theme.okGreen : theme.warnRedText
                     }
                     Text {
                         id: statusText
                         anchors.centerIn: parent
                         anchors.horizontalCenterOffset: 6
                         text: telemetryController.readyToFly ? "READY" : telemetryController.statusMessage.toUpperCase()
-                        color: telemetryController.readyToFly ? theme.okGreen : theme.warnRed
+                        color: telemetryController.readyToFly ? theme.okGreen : theme.warnRedText
                         font: theme.panelTitleFont
                     }
                 }

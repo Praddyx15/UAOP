@@ -15,6 +15,9 @@ service LogService {
   rpc ExportLog(ExportLogRequest) returns (ExportLogResponse);
   rpc AnalyseLog(AnalyseLogRequest) returns (AnalyseLogResponse); // Phase 2: ai-engine
   rpc GetReport(GetReportRequest) returns (GetReportResponse);
+  // Post-mission analysis by flight-log-engine's analysis sidecar (ADR-0022).
+  rpc ListFlightReports(ListFlightReportsRequest) returns (ListFlightReportsResponse);
+  rpc GetFlightReport(GetFlightReportRequest) returns (GetFlightReportResponse);
 }
 
 message LogEntry {
@@ -83,4 +86,81 @@ message GetReportRequest {
 
 message GetReportResponse {
   Report report = 1;
+}
+
+// The parts of a FlightMD report (schema 1.7, flightmd-core) the GCS post-mission
+// panel shows. Names follow the FlightMD schema so the sidecar's JSON maps 1:1;
+// ascent-profile findings are dropped at the sidecar (Review R4/F26).
+enum FindingSeverity {
+  FINDING_SEVERITY_UNSPECIFIED = 0;
+  FINDING_SEVERITY_CRITICAL = 1;
+  FINDING_SEVERITY_WARNING = 2;
+  FINDING_SEVERITY_INFO = 3;
+  FINDING_SEVERITY_GOOD = 4;
+}
+
+message FlightReportSummary {
+  string report_id = 1;
+  string log_id = 2;          // empty until M5.2 capture assigns one
+  string vehicle_id = 3;
+  string airframe_label = 4;  // FlightMD airframe tag, needed for the tune-fly-verify loop
+  string file_name = 5;
+  google.protobuf.Timestamp analysed_at = 6;
+  string schema_version = 7;
+  optional double overall_score = 8; // unset when nothing could be assessed
+  string score_label = 9;
+  string letter_grade = 10;
+  int32 critical_count = 11;
+  int32 warning_count = 12;
+}
+
+message FlightFinding {
+  string id = 1;
+  string category = 2;
+  FindingSeverity severity = 3;
+  string title = 4;
+  string plain_english = 5;
+  string recommendation = 6;
+  double confidence = 7;
+  optional double t_start_s = 8; // log-relative seconds
+  optional double t_end_s = 9;
+  repeated string params = 10;   // parameter names the recommendation touches
+  string kind = 11;
+}
+
+message FlightParamRecommendation {
+  string param_name = 1;
+  double current_value = 2;
+  double suggested_value = 3;
+  string unit = 4;
+  string change_direction = 5; // increase | decrease | set
+  string reason = 6;
+}
+
+message FlightReport {
+  FlightReportSummary summary = 1;
+  string executive_summary = 2;
+  repeated FlightFinding findings = 3;
+  repeated FlightParamRecommendation param_change_sheet = 4;
+  repeated string parse_warnings = 5;
+  optional double assessed_fraction = 6;
+}
+
+message ListFlightReportsRequest {
+  string vehicle_id = 1; // optional filter
+  int32 page_size = 2;
+  string page_token = 3;
+}
+
+message ListFlightReportsResponse {
+  repeated FlightReportSummary reports = 1;
+  string next_page_token = 2;
+}
+
+message GetFlightReportRequest {
+  string report_id = 1;
+}
+
+message GetFlightReportResponse {
+  FlightReport report = 1;
 }
