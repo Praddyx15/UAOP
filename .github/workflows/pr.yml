@@ -29,6 +29,11 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with: { fetch-depth: 0 } # buf breaking needs main's history to diff against
       - uses: bufbuild/buf-setup-action@a47c93e0b1648d5651a065437926377d060baa99 # v1.50.0
+        # Pinned version + the workflow token: without them the action resolves "latest" through
+        # the anonymous GitHub API and fails on its shared rate limit (PR #2, 2026-11-11).
+        with:
+          version: 1.71.0
+          github_token: ${{ github.token }}
       - name: buf lint
         working-directory: api/proto
         run: buf lint
