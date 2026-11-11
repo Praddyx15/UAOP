@@ -13,4 +13,4 @@ Directly seeds [PRODUCT_REQUIREMENTS.md](../../../../docs/00_Project_Foundation/
 
 ## Scope note
 
-This is the same author's own prior work (Pradum Behl, Sixty Motion Aerospace), reused under its MIT license — no third-party licensing question. Firmware coverage is currently PX4 v1.13/v1.14 only; ArduPilot 4.5 metadata (also referenced in M4.4) is not yet seeded here and remains to be authored or sourced when that task starts.
+This is the same author's own prior work (Pradum Behl), reused under its MIT license — no third-party licensing question. Firmware coverage is currently PX4 v1.13/v1.14 only; ArduPilot 4.5 metadata (also referenced in M4.4) is not yet seeded here and remains to be authored or sourced when that task starts.

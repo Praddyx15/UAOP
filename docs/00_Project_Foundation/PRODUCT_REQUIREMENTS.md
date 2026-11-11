@@ -1,6 +1,6 @@
 # PRODUCT_REQUIREMENTS
 
-**Version 0.1.0 · 2026-07-03 · Requirement IDs are permanent; never renumber.**
+**Version 0.1.1 · 2026-11-11 (HLR-033, HLR-044 added by R8/ADR-0023) · Requirement IDs are permanent; never renumber.**
 
 Requirement convention (feeds the RTM): `UAOP-HLR-nnn` high-level requirements below; low-level requirements (`UAOP-LLR-nnn-mm`) are derived per service in the engine documents and in code via `@req:` annotations. Verification method tags: **T** = test, **A** = analysis, **I** = inspection, **D** = demonstration.
 
@@ -38,12 +38,14 @@ Requirement convention (feeds the RTM): `UAOP-HLR-nnn` high-level requirements b
 - **UAOP-HLR-030 (T)** All telemetry SHALL be persisted to TimescaleDB at full received rate (design ceiling 1000 Hz IMU) and streamed to UI consumers over WebSocket at configurable rates.
 - **UAOP-HLR-031 (T)** The platform SHALL import and analyse PX4 ULog, ArduPilot DataFlash, and MAVLink telemetry logs via the 7-module weighted analyser suite (oscillation, vibration, EKF, battery, GPS, parameter anomaly, motor/ESC) producing scored findings with plain-language explanations. *(Corrected 2026-07-07, Review R4: format list extended to match the real `flightmd_core` dependency.)* The deterministic analysis and plain-language explanation generation SHALL function with **zero network calls** in the default configuration (UAOP-NFR-001); any AI-based prose enhancement is optional, off by default, and requires explicit per-organisation opt-in when the node has connectivity.
 - **UAOP-HLR-032 (A)** Flight logs SHALL be hash-chained at capture for tamper evidence.
+- **UAOP-HLR-033 (T)** *(added by review R8/ADR-0023)* The platform SHALL support an **observer mode** in which it ingests a forwarded MAVLink v2 stream or imported logs from a vehicle flown by another GCS (QGroundControl, Mission Planner, MAVProxy), for PX4 and ArduPilot alike, while holding no command authority: observer sessions SHALL have no publish permission on `uaop.cmd.>` and SHALL still produce the capture, audit and evidence records of UAOP-HLR-032, -042 and -044.
 
 ### Remote ID & compliance
 - **UAOP-HLR-040 (T)** The platform SHALL implement ASTM F3411-22a Remote ID monitoring/management: broadcast state, mandatory field display, ≥1 Hz cycle verification, USS network status; broadcast cycles audit-logged.
 - **UAOP-HLR-041 (D)** The platform SHALL provide jurisdiction-aware compliance tooling: FAA (Part 107/89, LAANC status), EASA (SORA SAIL calculator per JARUS v2.5, 24-OSO checklist, PDF report), DGCA (Digital Sky flight-plan state, DAM zones).
 - **UAOP-HLR-042 (A)** The audit log SHALL be append-only with a SHA-256 hash chain; any gap or reorder SHALL be detectable by the export verifier.
 - **UAOP-HLR-043 (T)** A 30-item categorised pre-flight checklist SHALL gate an AUTHORISE FLIGHT action; sign-off is audit-logged with operator identity.
+- **UAOP-HLR-044 (A)** *(added by review R8/ADR-0023)* For every captured flight the platform SHALL produce a signed, self-verifying **flight evidence bundle** that references by SHA-256 hash: the flight log (UAOP-HLR-032), the parameter snapshot and diff against the previous flight of the airframe, the FlightMD report (UAOP-HLR-031), the imported AirBrief pre-flight brief and its schema version when one exists, and the matching audit-chain extract (UAOP-HLR-042). The bundle SHALL verify offline with the export verifier and SHALL contain evidence and findings only: it SHALL NOT state that an aircraft is airworthy, cleared, or go/no-go.
 
 ### Simulation & digital twin (Phase 3)
 - **UAOP-HLR-050 (T)** The platform SHALL launch/supervise PX4 SITL and ArduPilot SITL with Gazebo from the UI, including environment selection and failure injection (GPS loss, motor-out, compass jam, comms loss, battery sag, wind gust).

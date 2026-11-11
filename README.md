@@ -1,10 +1,12 @@
 # UAOP — Unified Autonomy Operating Platform
 
-**Sixty Motion Aerospace** · Status: **Pre-implementation baseline (Phase 0)** · Doc set: **v0.1.0 · 2026-07-03**
+A personal project by Pradum Behl · Status: **Phase 1 in development** (M0 and M1 done, M2 next) · Positioning: **ADR-0023, 2026-11-11**
 
 UAOP is an operational platform that sits **above** existing UAV autonomy ecosystems — PX4, ArduPilot, MAVLink, ROS 2, Gazebo — and unifies ground control, deep tuning, simulation, AI diagnostics, fleet operations, and regulatory compliance into one coherent, deployable edge-to-cloud product.
 
 UAOP is **not** another ground control station and **not** another autopilot. It does not fork or replace the open ecosystems it integrates; it composes them through adapters and presents a single operational surface.
+
+**Where it starts (ADR-0023):** UAOP is the **flight-evidence layer** for PX4 and ArduPilot alike. With its sister projects [AirBrief](https://github.com/Praddyx15/AirBrief) (pre-flight brief) and [FlightMD](https://github.com/Praddyx15/FlightMD) (log diagnosis, tune-fly-verify), it records that an aircraft was briefed, flown, diagnosed and reviewed, in a signed bundle anyone can verify offline. It can fly the vehicle itself or sit beside QGroundControl or Mission Planner in observer mode.
 
 ---
 
@@ -42,7 +44,7 @@ All engineering documentation lives in [`docs/`](docs/) as a **living design sys
 | Flows & extension | [DATA_FLOW](docs/02_System_Architecture/DATA_FLOW.md) · [EVENT_FLOW](docs/02_System_Architecture/EVENT_FLOW.md) · [PLUGIN_SYSTEM](docs/01_Product_Architecture/PLUGIN_SYSTEM.md) · [SDK_DESIGN](docs/01_Product_Architecture/SDK_DESIGN.md) · [API_SPECIFICATION](docs/03_Software_Architecture/API_SPECIFICATION.md) |
 | Integrations | [MAVLINK_INTEGRATION](docs/02_System_Architecture/MAVLINK_INTEGRATION.md) · [ROS2_INTEGRATION](docs/02_System_Architecture/ROS2_INTEGRATION.md) · [SIMULATION_ARCHITECTURE](docs/02_System_Architecture/SIMULATION_ARCHITECTURE.md) · [DIGITAL_TWIN](docs/01_Product_Architecture/DIGITAL_TWIN.md) |
 | Engines | [MISSION_ENGINE](docs/01_Product_Architecture/MISSION_ENGINE.md) · [TELEMETRY_ENGINE](docs/01_Product_Architecture/TELEMETRY_ENGINE.md) · [TUNING_ENGINE](docs/01_Product_Architecture/TUNING_ENGINE.md) · [AI_ENGINE](docs/01_Product_Architecture/AI_ENGINE.md) · [FLEET_MANAGEMENT](docs/01_Product_Architecture/FLEET_MANAGEMENT.md) |
-| Operations | [DEPLOYMENT](docs/05_Deployment_Architecture/DEPLOYMENT.md) · [SECURITY](docs/06_Compliance_and_Quality/SECURITY.md) · [COMPLIANCE](docs/06_Compliance_and_Quality/COMPLIANCE.md) · [VALIDATION](docs/06_Compliance_and_Quality/VALIDATION.md) · [TESTING](docs/06_Compliance_and_Quality/TESTING.md) · [CI_CD](docs/05_Deployment_Architecture/CI_CD.md) · [DEVOPS](docs/05_Deployment_Architecture/DEVOPS.md) · [DATABASE](docs/03_Software_Architecture/DATABASE.md) · [LOGGING](docs/05_Deployment_Architecture/LOGGING.md) · [OBSERVABILITY](docs/05_Deployment_Architecture/OBSERVABILITY.md) |
+| Operations | [DEPLOYMENT](docs/05_Deployment_Architecture/DEPLOYMENT.md) · [SECURITY](docs/06_Compliance_and_Quality/SECURITY.md) · [COMPLIANCE](docs/06_Compliance_and_Quality/COMPLIANCE.md) · [VALIDATION](docs/06_Compliance_and_Quality/VALIDATION.md) · [TESTING](docs/06_Compliance_and_Quality/TESTING.md) · [CI_CD](docs/05_Deployment_Architecture/CI_CD.md) · [DEVOPS](docs/05_Deployment_Architecture/DEVOPS.md) · [DATABASE](docs/03_Software_Architecture/DATABASE.md) · [LOGGING](docs/05_Deployment_Architecture/LOGGING.md) · [OBSERVABILITY](docs/05_Deployment_Architecture/OBSERVABILITY.md) · [SECURITY_CONTROLS_MAP](docs/06_Compliance_and_Quality/SECURITY_CONTROLS_MAP.md) |
 | UI & standards | [UI_GUIDELINES](docs/04_UI_Architecture/UI_GUIDELINES.md) · [UX_GUIDELINES](docs/04_UI_Architecture/UX_GUIDELINES.md) · [STYLE_GUIDE](docs/04_UI_Architecture/STYLE_GUIDE.md) · [REPOSITORY_STRUCTURE](docs/08_Developer_Handbook/REPOSITORY_STRUCTURE.md) · [CODING_STANDARDS](docs/08_Developer_Handbook/CODING_STANDARDS.md) |
 | Governance | [DECISIONS](docs/00_Project_Foundation/DECISIONS.md) · [ROADMAP](docs/00_Project_Foundation/ROADMAP.md) · [RISK_REGISTER](docs/00_Project_Foundation/RISK_REGISTER.md) · [COMPETITOR_ANALYSIS](docs/00_Project_Foundation/COMPETITOR_ANALYSIS.md) · [BUSINESS_MODEL](docs/00_Project_Foundation/BUSINESS_MODEL.md) |
 | Implementation | [IMPLEMENTATION_PLAN](docs/07_Implementation_Guides/IMPLEMENTATION_PLAN.md) · [PROJECT_STRUCTURE](docs/07_Implementation_Guides/PROJECT_STRUCTURE.md) · [DOCUMENTATION_PROCESS](docs/08_Developer_Handbook/DOCUMENTATION_PROCESS.md) |
@@ -76,4 +78,4 @@ Full rationale: [REPOSITORY_STRUCTURE.md](docs/08_Developer_Handbook/REPOSITORY_
 
 Part of the UAV suite: [FlightMD](https://github.com/Praddyx15/FlightMD) (flight-log analysis, runs inside UAOP's flight-log-engine, ADR-0022) · AeroAtlas (geospatial pre-flight evidence) · UAOP. The suite name is a placeholder; in the GCS it is `SUITE_NAME` in `frontend/qt-desktop-gcs/src/core/Suite.h`.
 
-*This repository is in the documentation-baseline stage. Implementation begins only after the Phase 1 validation gate in [ROADMAP.md](docs/00_Project_Foundation/ROADMAP.md) is agreed.*
+*Implementation is under way: M0 and M1 are complete, M2 (first telemetry slice) is next, followed by M2E (the flight-evidence wedge). Current status: [IMPLEMENTATION_PLAN.md §0](docs/07_Implementation_Guides/IMPLEMENTATION_PLAN.md); session log: [progress.md](docs/context/phase-1/progress.md); market position: [COMPETITOR_ANALYSIS.md](docs/00_Project_Foundation/COMPETITOR_ANALYSIS.md).*

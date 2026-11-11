@@ -20,6 +20,8 @@ This document is the project constitution. Every other document, every prompt gi
 - Fleet management and enterprise operations
 - Regulatory compliance tooling (FAA / EASA / DGCA)
 
+**Positioning (ADR-0023, 2026-11-11):** UAOP leads as the **flight-evidence layer**: the system of record that a given aircraft, with a given parameter set, was briefed (AirBrief), diagnosed and tuned (FlightMD), flown and captured (UAOP), with a signed bundle a third party can verify offline. It is neutral across PX4 and ArduPilot and can run beside an existing GCS in observer mode. The capabilities listed above remain the scope; this is the order they are built and sold in.
+
 **Explicit non-goals:**
 - UAOP is **not** an autopilot. It never runs the inner control loops. PX4 and ArduPilot remain authoritative for flight control.
 - UAOP is **not** a fork of QGroundControl, Mission Planner, or any ecosystem project. Integration is by **adapter**, never by merge.

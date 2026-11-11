@@ -33,7 +33,7 @@ Not by replacing the components — their communities, flight heritage, and hard
 
 ## The moat, honestly stated
 
-Individually, every UAOP feature exists somewhere. The moat is (a) the **integration itself** — correct, supervised interop across MAVLink/ROS 2/simulation is brutally hard and nobody has productized it; (b) **compliance-by-design** — audit trails and traceability retrofitted are worthless, ours are structural; (c) **air-gap-first** — a distribution posture cloud-native competitors cannot cheaply copy.
+Individually, every UAOP feature exists somewhere. The moat is (a) the **integration itself** — correct, supervised interop across MAVLink/ROS 2/simulation is brutally hard and nobody has productized it; (b) **compliance-by-design** — audit trails and traceability retrofitted are worthless, ours are structural; (c) **air-gap-first** — a distribution posture cloud-native competitors cannot cheaply copy. *Restated 2026-11-11 (ADR-0023):* (c) alone is now matched (FlytBase One ships air-gapped), so the moat is the combination: a **flight-evidence loop neutral across PX4 and ArduPilot** (AirBrief brief, FlightMD diagnosis and tune-fly-verify, UAOP capture and signed evidence bundle), verifiable offline, built on (b) and (c).
 
 ## Relationship to MISSION.md
 
