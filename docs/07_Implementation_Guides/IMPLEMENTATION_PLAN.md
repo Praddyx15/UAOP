@@ -1,21 +1,26 @@
 # IMPLEMENTATION_PLAN
 
-**Version 0.2.11 · 2026-07-13 · The executable plan for completing UAOP's development. ROADMAP.md owns phase objectives and exit gates; this document owns the work breakdown, effort estimates, sequencing, and working method that get there. Stack is locked: Qt 6.8 LTS/QML + C++ (ADR-0002, ADR-0016).**
+**Version 0.3.0 · 2026-11-11 · The executable plan for completing UAOP's development. ROADMAP.md owns phase objectives and exit gates; this document owns the work breakdown, effort estimates, sequencing, and working method that get there. Stack is locked: Qt 6.8 LTS/QML + C++ (ADR-0002, ADR-0016).**
 
-**Changelog:** v0.2.0 expanded v0.1.0 from milestone-level objectives into a task-level work breakdown structure (WBS) with effort estimates, dependency IDs, requirement/risk traces, a timeline, and per-milestone Definition of Ready/Done — produced after Review R3, whose findings are already folded into the WBS below (RTM tooling moved earlier, continuous fuzzing wired into CI from M0, frozen-directory guard scheduled, SITL coverage distributed across milestones instead of backloaded to M7, and a mid-phase recalibration checkpoint added). v0.2.1 folds in Review R4 / ADR-0018 (see [DECISIONS.md](../00_Project_Foundation/DECISIONS.md)): the real, live `flightmd_core` dependency de-risks and reshapes parts of M2/M4/Phase 2, and two of its non-code assets are now seeded in-repo ahead of schedule. v0.2.2 folds in Review R5 / **ADR-0019** (license-tiered upstream code reuse): PX4 (BSD) and QGC (Apache option, per-file verified) code may be ported with provenance — the protocol transfer state machines in M4.2/M4.4 now start from QGC's battle-tested logic instead of blank pages; ArduPilot/Mission Planner (GPLv3) are behavioral references only, never in-tree; M0.5 gains an in-PR license-allowlist gate. v0.2.3 folds in Review R6 / **ADR-0020** (M0.7 map spike, OQ-3 resolved): MapLibre Native Qt deferred (Qt-version mismatch — prebuilt binaries top out at 6.7, local kit is 6.11.1); an interim `QQuickImageProvider` + MBTiles raster renderer ships instead, registered as an ordinary panel with zero changes to the M0.4 panel-host framework. v0.2.4 closes Review R6/F44: `pr.yml` gained a `build-gcs-linux` job (aqtinstall-provisioned Qt) so the GCS code from M0.4/M0.7 is finally exercised in CI, not just locally.
+**Changelog:** v0.2.0 expanded v0.1.0 from milestone-level objectives into a task-level work breakdown structure (WBS) with effort estimates, dependency IDs, requirement/risk traces, a timeline, and per-milestone Definition of Ready/Done — produced after Review R3, whose findings are already folded into the WBS below (RTM tooling moved earlier, continuous fuzzing wired into CI from M0, frozen-directory guard scheduled, SITL coverage distributed across milestones instead of backloaded to M7, and a mid-phase recalibration checkpoint added). v0.2.1 folds in Review R4 / ADR-0018 (see [DECISIONS.md](../00_Project_Foundation/DECISIONS.md)): the real, live `flightmd_core` dependency de-risks and reshapes parts of M2/M4/Phase 2, and two of its non-code assets are now seeded in-repo ahead of schedule. v0.2.2 folds in Review R5 / **ADR-0019** (license-tiered upstream code reuse): PX4 (BSD) and QGC (Apache option, per-file verified) code may be ported with provenance — the protocol transfer state machines in M4.2/M4.4 now start from QGC's battle-tested logic instead of blank pages; ArduPilot/Mission Planner (GPLv3) are behavioral references only, never in-tree; M0.5 gains an in-PR license-allowlist gate. v0.2.3 folds in Review R6 / **ADR-0020** (M0.7 map spike, OQ-3 resolved): MapLibre Native Qt deferred (Qt-version mismatch — prebuilt binaries top out at 6.7, local kit is 6.11.1); an interim `QQuickImageProvider` + MBTiles raster renderer ships instead, registered as an ordinary panel with zero changes to the M0.4 panel-host framework. v0.2.4 closes Review R6/F44: `pr.yml` gained a `build-gcs-linux` job (aqtinstall-provisioned Qt) so the GCS code from M0.4/M0.7 is finally exercised in CI, not just locally. **v0.3.0 (2026-11-11) folds in ADR-0023 / Review R8:** new milestone **M2E (flight-evidence wedge)** after M2 pulls forward M3.1, M4.7, M5.2 and M5.4 (IDs unchanged so code `TODO(M…)` markers stay valid) and adds observer mode, the signed flight evidence bundle, a FlightMD autopilot-parity matrix and a design-partner checkpoint; Phase 1 total 115 → 121.5 focus-days; §0 status snapshot brought up to date (it still said M0 not started).
 
 ---
 
 ## 0. Status snapshot (read this first)
 
+*Updated 2026-11-11.*
+
 | Item | State |
 |---|---|
-| Documentation | 47 docs baselined + amended (`docs/00_…08_`), pushed to `main` at `github.com/Praddyx15/UAOP` |
-| Reviews | R1 (12 findings → ADR-0015/16/17), R2 (7 findings → workspace cleanup + OQ-2 resolved), R3 (this plan — see below) |
-| Repository structure | Full PROJECT_STRUCTURE.md tree created; FROZEN.md guards on `dji-service/`/`fpv-service/` |
-| Code | **One asset exists**: a Qt 6/C++20 GCS prototype (`frontend/qt-desktop-gcs/`) — CMake build, `TelemetryController`, 4 QML views. Kept as the M0 seed (R2/F13); everything else in this plan is unbuilt |
-| Open questions blocking nothing yet | OQ-1 (dji/fpv scope, Phase 2), OQ-3 (map spike, M0), OQ-4/OQ-5 (licensing/pricing, Phase 4), OQ-6/OQ-7 (Phase 2/4) |
-| Current milestone | **M0**, not started |
+| Documentation | 48 numbered docs (`docs/00_…08_`, SECURITY_CONTROLS_MAP.md added 2026-11-11) plus the DO-178C Annex A scaffold; reviews R1–R8 in DECISIONS.md |
+| Positioning | **ADR-0023 (2026-11-11):** UAOP is the flight-evidence layer, neutral across PX4 and ArduPilot; works alongside existing GCSs via observer mode; Phase 1 resequenced evidence-first |
+| Milestones done | **M0** (2026-07-07) and **M1** (2026-07-13), both Definition-of-Done met; M2 prep: C++ protobuf codegen (ADR-0021) |
+| Ahead of plan | flight-log-engine FlightMD analysis sidecar and GCS POST-MISSION panel (ADR-0022, merged 2026-11-11); GCS on the suite design tokens |
+| Code that runs | `services/common` runtime (unit-tested), api-gateway v0 (11 tests on real Redis/NATS/gRPC), 10 Postgres/Timescale migrations, JetStream provisioning, idempotency harness, Qt GCS panel host and interim map, analysis sidecar |
+| Known carried gaps | no real NATS C++ client yet (in-memory adapter only); AUDIT stream lacks true always-fsync (ADR-0015 needs a server-level config); protobuf target skips on local Windows/MinGW |
+| Open questions | OQ-1 (dji/fpv, Phase 2), **OQ-4 (licensing, now due before the first design-partner agreement)**, OQ-5 (pricing; M2E.6 answers it), OQ-6 (Phase 2), OQ-7 (Phase 4) |
+| Current milestone | **M2**, not started; then **M2E** |
+| Progress | ≈ 25 of 121.5 Phase 1 focus-days (≈ 21%); the M2.10 recalibration is still pending |
 
 ## 1. Working method (applies to every milestone — unchanged from v0.1.0)
 
@@ -29,11 +34,11 @@
 
 **Unit: focus-day** ≈ 4–6 hours of uninterrupted implementation work (solo founder, AI-assisted tooling). This is not a calendar day — [RISK_REGISTER R-4](../00_Project_Foundation/RISK_REGISTER.md) already flags that job-hunting and other commitments compete for time. Three cadence scenarios convert focus-days to calendar time; **pick the one matching your actual availability this month, don't assume the aggressive one**:
 
-| Cadence | Focus-days/week | Phase 1 (115 focus-days) calendar time |
+| Cadence | Focus-days/week | Phase 1 (121.5 focus-days) calendar time |
 |---|---|---|
-| Aggressive (near full-time) | 5 | ~23 weeks (~5.3 months) |
-| Sustainable (part-time alongside other work) | 3 | ~38 weeks (~8.8 months) |
-| Conservative (interrupted, realistic worst case) | 2 | ~58 weeks (~13.3 months) |
+| Aggressive (near full-time) | 5 | ~24 weeks (~5.6 months) |
+| Sustainable (part-time alongside other work) | 3 | ~41 weeks (~9.3 months) |
+| Conservative (interrupted, realistic worst case) | 2 | ~61 weeks (~14 months) |
 
 **Estimates are architect judgment, not measured data** (Review R3/F22) — the first real calibration point is milestone M2 (task M2.10 below); after it, recompute M3–M7 from actual time spent rather than trusting the numbers here.
 
@@ -47,15 +52,16 @@
 graph LR
     M0[M0 Skeleton+CI<br/>11.5d] --> M1[M1 Contracts+Infra<br/>13.5d]
     M1 --> M2[M2 First Telemetry<br/>20.25d]
-    M2 --> M3[M3 Command+Authority<br/>15d]
-    M3 --> M4[M4 Mission+Params<br/>21d]
-    M4 --> M5[M5 Compliance spine<br/>14.25d]
+    M2 --> M2E[M2E Flight-evidence wedge<br/>15.5d]
+    M2E --> M3[M3 Command+Authority<br/>12d]
+    M3 --> M4[M4 Mission+Params<br/>19d]
+    M4 --> M5[M5 Compliance spine<br/>10.25d]
     M5 --> M6[M6 GCS workspaces<br/>9d]
     M6 --> M7[M7 Hardening+Gate<br/>10.5d]
     M7 --> P2[Phase 2 ~90-110d] --> P3[Phase 3 ~100-130d] --> P4[Phase 4 ~130-170d]
 ```
 
-**Total Phase 1: ≈115 focus-days.** GCS panel construction (M0.4 onward) and documentation are parallel-safe against the M1→M2→M3 spine; everything else is serial (§7).
+**Total Phase 1: ≈121.5 focus-days** (ADR-0023 added M2E: 6.5 days of new work, 9 days moved forward from M3–M5). GCS panel construction (M0.4 onward) and documentation are parallel-safe against the M1→M2→M3 spine; everything else is serial (§7).
 
 ## 4. Illustrative timeline (aggressive cadence — recalibrate after M2)
 
@@ -68,9 +74,11 @@ gantt
     M1 Contracts+Infra        :m1, after m0, 14d
     M2 First Telemetry        :crit, m2, after m1, 20d
     Recalibration checkpoint  :milestone, after m2, 0d
-    M3 Command+Authority      :crit, m3, after m2, 15d
-    M4 Mission+Parameters     :crit, m4, after m3, 21d
-    M5 Compliance spine       :m5, after m4, 14d
+    M2E Flight-evidence wedge :crit, m2e, after m2, 16d
+    Design-partner checkpoint :milestone, after m2e, 0d
+    M3 Command+Authority      :crit, m3, after m2e, 12d
+    M4 Mission+Parameters     :crit, m4, after m3, 19d
+    M5 Compliance spine       :m5, after m4, 10d
     M6 GCS workspaces         :m6, after m5, 9d
     M7 Hardening+Gate         :crit, m7, after m6, 11d
 ```
@@ -157,24 +165,43 @@ Table columns: **ID** · **Task (deliverable folded in)** · **Effort** (focus-d
 | M2.10 | **Recalibration checkpoint:** compare actual vs. estimated effort for M0–M2; adjust M3–M7 estimates in this document before proceeding (closes R3/F22) | 0.25d | M2.1–M2.9 | — |
 | **M2 total** | | **20.25d** | | |
 
-### M3 — Command path and authority
+### M2E — Flight-evidence wedge (ADR-0023)
 
-**DoR:** M2 complete, M2.10 recalibration done. **DoD:** arm/mode/RTL against SITL with ACCEPTED/REJECTED/TIMEOUT semantics demonstrated; two GCS instances demonstrate handover + `NOT_IN_CONTROL` + EMERGENCY override; chain verifier proves completeness across a fault-injection run (Postgres killed mid-campaign — commands keep flowing, chain reconciles).
+**DoR:** M2 complete, M2.10 recalibration done. **DoD:** one PX4 SITL flight and one ArduPilot SITL flight, each run twice (flown by UAOP, and flown by an external GCS with UAOP in observer mode: MAVProxy in CI, QGC by hand), each produce a signed flight evidence bundle that verifies offline; the FlightMD parity matrix is published with gaps listed; the M2E.6 checkpoint is recorded in `progress.md`. ROADMAP Phase 1 gate items 11 and 12 demonstrable.
+
+Pulled-forward tasks keep their original IDs and specifications; only their position changes.
 
 | ID | Task | Effort | Depends on | Trace |
 |---|---|---|---|---|
+| M4.7 | ArduPilot SITL added to the CI matrix; dual-stack routing test | 2d | M2.1 | MAVLINK_INTEGRATION.md §2 |
 | M3.1 | `compliance-engine` core: audit intake consumer, SHA-256 hash-chain append (single writer), verifier | 3d | M1.5 | COMPLIANCE.md §B.3, DATABASE.md §3 |
+| M5.2 | `flight-log-engine`: SITL log download for PX4 ULog **and ArduPilot DataFlash**, hash-at-capture, MinIO library, export | 3d | M2.1 | UAOP-HLR-031/032 |
+| M5.4 | Audit export bundle (self-verifying) | 1d | M3.1 | COMPLIANCE.md §B.3 |
+| M2E.1 | **Observer mode:** read-only MAVLink endpoint (fed by mavlink-router, MAVProxy or QGC forwarding) plus log-file import; vehicle-manager marks the session OBSERVING; its NATS credentials carry no publish on `uaop.cmd.>` (R8/F55) | 2d | M2.1, M2.5 | UAOP-HLR-033, ADR-0012 pattern |
+| M2E.2 | **FlightMD parity matrix:** run the analysis sidecar on PX4 ULog and ArduPilot DataFlash (both SITLs plus `tests/data/sample_logs/`); record per-analyser coverage and findings agreement in `docs/scaling/flightmd-parity.md`; file gaps upstream on FlightMD | 1d | M5.2, ADR-0022 sidecar | UAOP-HLR-031, R-16 |
+| M2E.3 | **Flight evidence bundle v0:** per flight, a signed manifest referencing by hash the log, parameter snapshot and diff, FlightMD report, imported AirBrief brief (stored, schema-checked, never executed) and audit-chain extract; checked by the M5.4 verifier; no go/no-go field (R8/F56) | 2d | M3.1, M5.2, M5.4 | UAOP-HLR-044, SECURITY.md §3 |
+| M2E.4 | `tests/sitl/`: evidence-bundle and observer-mode coverage for both autopilots | 1d | M2E.1, M2E.3, M4.7 | VALIDATION.md §3 |
+| M2E.5 | Keep [SECURITY_CONTROLS_MAP.md](../06_Compliance_and_Quality/SECURITY_CONTROLS_MAP.md) current with what M2E actually built (created 2026-11-11) | 0.25d | M2E.1–M2E.4 | ADR-0023 §6 |
+| M2E.6 | **Design-partner checkpoint:** show a FlightMD report and evidence bundle built from their own logs to at least five Indian OEMs, RPTOs or integrators; record willingness to pay and missing pieces in `progress.md`; a re-order of M3–M6 needs its own ADR | 0.25d engineering (the conversations are founder time) | M2E.3 | OQ-5, R-17 |
+| **M2E total** | | **15.5d** (6.5 new + 9 moved) | | |
+
+### M3 — Command path and authority
+
+**DoR:** M2E complete (M2.10 recalibration and M2E.6 design-partner checkpoint done). **DoD:** arm/mode/RTL against SITL with ACCEPTED/REJECTED/TIMEOUT semantics demonstrated; two GCS instances demonstrate handover + `NOT_IN_CONTROL` + EMERGENCY override; chain verifier proves completeness across a fault-injection run (Postgres killed mid-campaign — commands keep flowing, chain reconciles).
+
+| ID | Task | Effort | Depends on | Trace |
+|---|---|---|---|---|
 | M3.2 | ADR-0015 admission semantics: JetStream-persisted event = command admission gate; async Postgres append with lag metric; EMERGENCY command class WAL + reconciler in mavlink-bridge | 3d | M3.1, M2.1 | ADR-0015, EDGE_ARCHITECTURE.md |
 | M3.3 | `vehicle-manager`: ControlSession model, command authorization, correlation-tracked command results | 3d | M2.5, M3.1 | ADR-0017, UAOP-HLR-005 |
 | M3.4 | Gateway command endpoints (ARM/DISARM/mode/RTL) with ACCEPTED/REJECTED/TIMEOUT semantics | 2d | M3.2–M3.3 | API_SPECIFICATION.md §4 |
 | M3.5 | GCS command surface: ARM/mode/RTL controls per the command-surface rule (UI_GUIDELINES.md §7), controlling/observing indicator | 2d | M3.4 | UI_GUIDELINES.md §7 |
 | M3.6 | Fault-injection test: kill Postgres mid-campaign, verify commands keep flowing and chain reconciles | 1d | M3.2 | VALIDATION.md §3 |
 | M3.7 | `tests/sitl/`: command-authority and audit-chain coverage added (R3/F25) | 1d | M3.1–M3.5 | VALIDATION.md §3 |
-| **M3 total** | | **15d** | | |
+| **M3 total** | | **12d** (M3.1 moved to M2E) | | |
 
 ### M4 — Mission and parameter engines
 
-**DoR:** M3 complete. **DoD:** ROADMAP Phase 1 gate items 2, 3, 5 demonstrable; ArduPilot SITL added to the matrix (dual-stack routing proven).
+**DoR:** M3 complete. **DoD:** ROADMAP Phase 1 gate items 2, 3, 5 demonstrable for PX4 and ArduPilot (ArduPilot SITL has been in CI since M2E/M4.7; dual-stack routing proven).
 
 | ID | Task | Effort | Depends on | Trace |
 |---|---|---|---|---|
@@ -184,9 +211,8 @@ Table columns: **ID** · **Task (deliverable folded in)** · **Effort** (focus-d
 | M4.4 | `parameter-engine`: full-table read, PX4 v1.14 + ArduPilot 4.5 metadata packs, validated/ACK'd/versioned writes. **De-risked twice**: (R4/ADR-0018) PX4 v1.13/v1.14 default-parameter and safe-range JSON already seeded at `backend/services/parameter-engine/data/` from FlightMD; (R5/ADR-0019) full PX4 parameter metadata sourced from PX4-Autopilot's published machine-readable definitions (BSD, Tier 1), ArduPilot metadata from its published parameter-definition *data* (facts, consumed as every GCS does), and the parameter I/O retry logic referenced from QGC's `ParameterManager` (Tier 2, ported not pasted) | 4d | M2.1, M1.7 | PRODUCT_REQUIREMENTS UAOP-HLR-020/021, ADR-0019 |
 | M4.5 | Mid-flight HIGH-risk write refusal policy | 1d | M4.4, M3.3 | TUNING_ENGINE.md §4 (write-risk classes) |
 | M4.6 | GCS Mission editor + Parameters panel + Geofence manager + Fail-safe config panels | 5d | M4.1–M4.5, M0.4 | UI_GUIDELINES.md §3 |
-| M4.7 | ArduPilot SITL added to the CI matrix; dual-stack routing test | 2d | M2.1 | MAVLINK_INTEGRATION.md §2 |
 | M4.8 | `tests/sitl/`: mission-transfer and parameter-write coverage added (R3/F25) | 1d | M4.1–M4.5 | VALIDATION.md §3 |
-| **M4 total** | | **21d** | | |
+| **M4 total** | | **19d** (M4.7 moved to M2E) | | |
 
 ### M5 — Compliance spine completes Phase 1 scope
 
@@ -195,18 +221,16 @@ Table columns: **ID** · **Task (deliverable folded in)** · **Effort** (focus-d
 | ID | Task | Effort | Depends on | Trace |
 |---|---|---|---|---|
 | M5.1 | `remote-id`: broadcast-state tracking, 1 Hz cycle evidence | 2d | M2.1, M3.1 | UAOP-HLR-040 |
-| M5.2 | `flight-log-engine`: SITL log download, hash-at-capture, MinIO library, export | 3d | M2.1 | UAOP-HLR-031/032 |
 | M5.3 | 30-item pre-flight checklist + AUTHORISE gate + signed sign-off | 2d | M3.1 | UAOP-HLR-043 |
-| M5.4 | Audit export bundle (self-verifying) | 1d | M3.1 | COMPLIANCE.md §B.3 |
 | M5.5 | GCS Checklist / Remote ID / Logs / Audit-viewer / Node-status panels | 4d | M5.1–M5.4, M0.4 | UI_GUIDELINES.md §3 |
 | M5.6 | Air-gap disconnect test across everything built in M0–M5 | 1d | M5.1–M5.5 | UAOP-NFR-001, SECURITY.md §6 |
 | M5.7 | OQ-1 checkpoint: re-verify the frozen-directory CI guard (M0.5) still holds before Phase 2 planning touches dji/fpv scope (R3/F24) | 0.25d | M0.5 | PROJECT_STRUCTURE.md §2 |
 | M5.8 | `tests/sitl/`: remote-id, log-capture, and checklist coverage added (R3/F25) | 1d | M5.1–M5.5 | VALIDATION.md §3 |
-| **M5 total** | | **14.25d** | | |
+| **M5 total** | | **10.25d** (M5.2 and M5.4 moved to M2E) | | |
 
 ### M6 — GCS workspaces and operator polish
 
-**DoR:** M5 complete. **DoD:** UAOP-NFR-011 measured; a QGC-fluent pilot completes the golden path unassisted.
+**DoR:** M5 complete. **Scope revisited after the M2E.6 design-partner checkpoint (ADR-0023 §3):** workspace polish is kept only where partners need UAOP as their primary GCS rather than in observer mode. **DoD:** UAOP-NFR-011 measured; a QGC-fluent pilot completes the golden path unassisted.
 
 | ID | Task | Effort | Depends on | Trace |
 |---|---|---|---|---|
@@ -232,7 +256,7 @@ Table columns: **ID** · **Task (deliverable folded in)** · **Effort** (focus-d
 | M7.7 | RTM ≥ 20 HLRs traced — verification only; the generator has existed since M0.8 (R3/F20) | 0.5d | M0.8 | UAOP-NFR-009 |
 | **M7 total** | | **10.5d** | | |
 
-**Phase 1 grand total: 11.5 + 13.5 + 20.25 + 15 + 21 + 14.25 + 9 + 10.5 = 115 focus-days.**
+**Phase 1 grand total: 11.5 + 13.5 + 20.25 + 15.5 (M2E) + 12 + 19 + 10.25 + 9 + 10.5 = 121.5 focus-days** (115 before ADR-0023).
 
 ---
 
@@ -248,7 +272,7 @@ These ranges are architect judgment calibrated against Phase 1's WBS density, no
 
 ## 7. Critical path and parallelization notes
 
-The critical path is **M1 → M2 → M3 → M4 → M5** (contracts → telemetry → command → mission/params → compliance); M6/M7 depend on all of it. Parallel-safe at any point: GCS panel construction against recorded fixtures (TESTING.md §5) once M0.4's panel-host framework exists, metadata-pack authoring, documentation, the OQ-3 map spike, and the bench-task list in §2. **Not parallel-safe:** anything touching `api/proto/` after M1's additive-only freeze, and audit-chain semantics after M3 (DAL C-equivalent scope — changes go through review, not ad hoc edits).
+The critical path is **M1 → M2 → M2E → M3 → M4 → M5** (contracts → telemetry → flight evidence → command → mission/params → compliance; M2E added by ADR-0023); M6/M7 depend on all of it. Parallel-safe at any point: GCS panel construction against recorded fixtures (TESTING.md §5) once M0.4's panel-host framework exists, metadata-pack authoring, documentation, the OQ-3 map spike, and the bench-task list in §2. **Not parallel-safe:** anything touching `api/proto/` after M1's additive-only freeze, and audit-chain semantics after M3 (DAL C-equivalent scope — changes go through review, not ad hoc edits).
 
 ## 8. How to run a milestone (the repeatable execution loop)
 
@@ -261,7 +285,11 @@ The critical path is **M1 → M2 → M3 → M4 → M5** (contracts → telemetry
 
 ## 9. Next session checklist (where to start right now)
 
-1. Open `docs/context/phase-1/progress.md` — read the latest entry first.
-2. Confirm M0's Definition of Ready (already met — documentation baseline is on `main`).
-3. Start with M0.1–M0.3 (toolchain + service template) since M0.4 (GCS) and M0.7 (map spike) both need decisions those tasks don't block on — order within M0 is flexible, but M0.5's frozen-directory guard should land before any service code is written elsewhere in the tree.
-4. Load the M0 WBS rows into `TaskCreate` and begin.
+*Updated 2026-11-11.*
+
+1. Open `docs/context/phase-1/progress.md` and read the latest entry first.
+2. M2's Definition of Ready is met (M1 done; C++ protobuf codegen wired per ADR-0021).
+3. Start with **M2.1** (`middleware/mavlink-bridge` v0); its `CMakeLists.txt` links `uaop::proto`. Decide early whether the real NATS C++ client spike (carried gap from M1.4) lands inside M2.1 or as its own timeboxed task before M2.4.
+4. Keep ArduPilot in view from M2.1 on: M2E's gate needs both autopilots, and M4.7 (ArduPilot SITL in CI) is now an M2E task.
+5. Founder actions outside code, in parallel: run the COMPETITOR_ANALYSIS.md §5 checks (ArduPilot `.bin` on the Roboto and Auterion free tiers), decide OQ-4 before any design-partner agreement, and line up the five M2E.6 conversations.
+6. Load the M2 WBS rows into tasks and begin.

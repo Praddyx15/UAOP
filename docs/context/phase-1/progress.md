@@ -269,3 +269,38 @@ Run for real against the live compose Postgres/TimescaleDB, not just written and
 **Docs updated:** IMPLEMENTATION_PLAN.md v0.2.11 (M1 DoD marked met), PROJECT_STRUCTURE.md v0.1.7.
 
 **Next:** M2 — First telemetry vertical slice (the credibility milestone).
+
+---
+
+## 2026-07-14 → 2026-10-27 — pause
+
+No commits for about 3.5 months after the M2-prep protobuf codegen commit (ADR-0021, 2026-07-14). The nightly CI kept passing on `main` until 2026-09-12. Recorded so the next M2.10 recalibration counts calendar gaps honestly (R-4 trigger: "two consecutive months without a gate-ward milestone" fired).
+
+---
+
+## 2026-10-27/28 — suite integration on `dev` (ADR-0022, Review R7)
+
+**Done (outside the M2 WBS, documented by ADR-0022):**
+- GCS moved to the suite design tokens (Geist font replaces Poppins; blue accent; warn-red text fixed to ≥ 7:1). `Theme` colours are now generated from `SUITE_TOKENS.json` by `tools/gen_theme_tokens.py`, with a contrast test (`tests/unit/test_suite_tokens.py`) in the PR guards job (R7/F45).
+- `flight-log-engine/analysis-sidecar/`: Python FastAPI sidecar wrapping `flightmd-core` (`/v1/analyses`, `/v1/flight-reports`), `param.written` consumer that hands applied recommendations back to a self-hosted FlightMD, deduplicated by event id; tests. GCS POST-MISSION panel in the REVIEW workspace reads it on loopback (TODO(M5.5)).
+- Contracts (additive): `LogService` report RPCs, `FlightmdRecommendation` on `WriteParameterRequest`, typed `events/v1/param.proto`.
+- CI: the PR workflow runs on pushes to `dev`; licence and RTM checks ignore local virtualenvs and `node_modules`; api-gateway lockfile updated for Trivy findings. Last `dev` run green 2026-10-28.
+
+**Interfaces only (still to build):** parameter-engine publisher (M4.4), Postgres/MinIO report library (M5.2), gateway route and GCS gateway session (M5.5).
+
+**Merged:** PR #1 (`dev` → `main`) on 2026-11-11.
+
+---
+
+## 2026-11-11 — market research, positioning (ADR-0023, Review R8), doc drift fixed
+
+**Done:**
+- Two verified market-research passes (each claim checked by three verifiers; 18 of 25 and 20 of 25 claims survived). Findings folded into COMPETITOR_ANALYSIS.md v0.2.0, BUSINESS_MODEL.md v0.2.0 and RISK_REGISTER.md v0.2.0. Headlines: Auterion ($130M Series B, PX4-only by all evidence), FlytBase One (air-gapped fleet ops, DJI-centric), Roboto (AI diagnosis of PX4 logs), SmartTune CLI (open-source ArduPilot tuning advice; GPL-derived, so behavioural reference only). No verified product covers the PX4 + ArduPilot evidence loop.
+- **ADR-0023:** UAOP leads as the flight-evidence layer with AirBrief and FlightMD; autopilot neutrality is a Definition-of-Done gate; observer mode beside existing GCSs; new milestone **M2E** (flight-evidence wedge) after M2, pulling forward M3.1, M4.7, M5.2, M5.4 and adding observer mode, the signed evidence bundle, a FlightMD parity matrix and a design-partner checkpoint. Phase 1: 115 → 121.5 focus-days. IMPLEMENTATION_PLAN.md v0.3.0, ROADMAP.md v0.1.1 (gate items 11–12), PRODUCT_REQUIREMENTS.md v0.1.1 (UAOP-HLR-033, -044).
+- New SECURITY_CONTROLS_MAP.md: UAOP controls against OMB M-26-02 Appendix B and the Indian Army AASHVAST test areas. Gaps found: MFA is optional (needed before M3.4 exposes commands), no remote wipe/lock design, no post-mission erase policy compatible with the audit chain, SBOM lacks a dependency-origin column.
+- Doc drift fixed (R8/F58): IMPLEMENTATION_PLAN §0 and §9, README status, CLAUDE.md/AGENTS.md milestone, ROADMAP "current" marker. "Sixty Motion Aerospace" removed as the byline everywhere outside `docs/context/legacy/`: UAOP is the founder's personal project. `main.cpp` Qt organisation name is now "UAOP" (moves the prototype's QSettings location).
+- RTM regenerated (it was last generated 2026-07-06 and missed the M1.4 annotations).
+
+**Founder actions (not code):** run the COMPETITOR_ANALYSIS.md §5 checks (an ArduPilot `.bin` on the Roboto and Auterion free tiers); decide OQ-4 before any design-partner agreement; incorporate and get DPIIT recognition before the next ADITI/iDEX call; line up the five M2E.6 conversations.
+
+**Next:** M2.1 (`middleware/mavlink-bridge` v0), keeping ArduPilot in scope from the first frame.

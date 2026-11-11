@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
 
     QGuiApplication app(argc, argv);
     app.setApplicationName("uaop-gcs");
-    app.setOrganizationName("Sixty Motion Aerospace");
+    app.setOrganizationName("UAOP");
 
     loadBundledFonts();
 

@@ -1,10 +1,10 @@
 # ROADMAP
 
-**Version 0.1.0 · 2026-07-03 · Four phases + Phase 0. Gates are sequential and non-negotiable (MISSION.md: depth over breadth). Durations are effort-shaped estimates for a solo founder working with AI-assisted tooling; scope, not calendar, defines a phase.**
+**Version 0.1.1 · 2026-11-11 (Phase 1 objective and gate amended, ADR-0023) · Four phases + Phase 0. Gates are sequential and non-negotiable (MISSION.md: depth over breadth). Durations are effort-shaped estimates for a solo founder working with AI-assisted tooling; scope, not calendar, defines a phase.**
 
 ---
 
-## Phase 0 — Documentation baseline & skeleton *(current)*
+## Phase 0 — Documentation baseline & skeleton *(done: development started 2026-07-07)*
 
 **Objectives:** documentation set (this one) agreed; open questions dispositioned; repo skeleton completed.
 **Deliverables:** all `docs/*.md`; OQ-1/OQ-2 decisions recorded; ⊕-marked directories created (REPOSITORY_STRUCTURE.md); `api/proto/` v1 package skeletons; CI pipeline shell (lint+build gates on empty-ish tree).
@@ -15,11 +15,12 @@
 
 ---
 
-## Phase 1 — Core GCS foundation
+## Phase 1 — Core GCS foundation *(current: M0 and M1 done, M2 next)*
 
-**Objective:** a certifiable-baseline GCS replacement: SITL-flyable, audit-chained, traceable from commit one.
+**Objective (amended 2026-11-11, ADR-0023):** the flight-evidence layer for PX4 **and** ArduPilot: SITL-flyable, audit-chained, traceable from commit one, producing a signed per-flight evidence bundle whether UAOP flies the vehicle or only observes a flight run from another GCS. UAOP's own GCS is part of the phase; replacing QGC or Mission Planner is no longer its aim. Work is sequenced evidence-first (IMPLEMENTATION_PLAN.md milestone M2E).
 
 **Deliverables:**
+- Evidence path first (M2E): observer mode (UAOP-HLR-033), log capture with hash-at-capture, audit chain, signed flight evidence bundle (UAOP-HLR-044) built from the FlightMD report and the imported AirBrief brief, ArduPilot SITL in CI from the first evidence milestone.
 - Services: mavlink-bridge, telemetry-engine, mission-engine, parameter-engine, vehicle-manager, remote-id, flight-log-engine, compliance-engine, api-gateway — Phase 1 scope per MICROSERVICES.md.
 - Full `VehicleTelemetry`/Snapshot/Delta contracts frozen (ADR-0009); NATS taxonomy live.
 - Qt GCS: FLIGHT OPS + REVIEW + COMPLIANCE workspaces — panels: Flight HUD, Map (incl. OQ-3 spike resolution), Mission editor, Parameters, Sensors status, Pre-flight checklist, Remote ID, Fleet cards (edge tier), Compliance/audit viewer, Logs, Geofence, Fail-safe config, Node status.
@@ -40,6 +41,8 @@
 8. Fault-injection: every service killed mid-operation, recovery ≤ 5 s, no message loss on persisted subjects.
 9. MISRA zero-critical; coverage targets met; RTM ≥ 20 HLRs fully traced.
 10. Disconnect test (air-gap) passes for all above.
+11. *(ADR-0023)* Observer mode: a SITL flight flown by an external GCS (MAVProxy in CI, QGC by hand) produces a signed evidence bundle while UAOP holds no command authority, for PX4 and ArduPilot.
+12. *(ADR-0023)* Every bundle verifies offline; the FlightMD parity matrix shows each analyser's PX4 and ArduPilot coverage, with gaps listed rather than hidden.
 
 ---
 
