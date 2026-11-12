@@ -1,5 +1,6 @@
-# Local AI/tooling state — never commit
-.claude/
+# Local AI/tooling state — never commit (the shared assistant guide is the one exception)
+.claude/*
+!.claude/CLAUDE.md
 .code-review-graph/
 .mcp.json
 .opencode.json
@@ -22,8 +23,7 @@ __pycache__/
 *_pb2_grpc.py
 
 # External reference material — reference-only, never committed (REPOSITORY_STRUCTURE.md rule 5)
-external-resources/*
-!external-resources/README.md
+external-resources/
 
 # OS noise
 .DS_Store

@@ -51,11 +51,11 @@ Per MASTER_CONTEXT §11 and DOCUMENTATION_PROCESS §3: updated every working ses
 ## 2026-07-07 — FlightMD real-project inspection; assets imported; docs corrected (ADR-0018, Review R4)
 
 **Done:**
-- Inspected `C:\Users\akass\Downloads\flightmd` — FlightMD is not a plan, it's a real, live, MIT-licensed product (github.com/Praddyx15/FlightMD, deployed at flightmd.vercel.app/flightmd-api.onrender.com), materially ahead of what UAOP's docs assumed: schema v1.5 (not v1.0), 3 log formats incl. MAVLink `.tlog` (not 2), 8 analyzers incl. an unweighted ascent/recovery module, AI-optional with **Groq default** (not Claude-mandatory), validated against 50 real-world logs across 11 vehicle types.
+- Inspected a local FlightMD checkout — FlightMD is not a plan, it's a real, live, MIT-licensed product (github.com/Praddyx15/FlightMD, deployed at flightmd.vercel.app/flightmd-api.onrender.com), materially ahead of what UAOP's docs assumed: schema v1.5 (not v1.0), 3 log formats incl. MAVLink `.tlog` (not 2), 8 analyzers incl. an unweighted ascent/recovery module, AI-optional with **Groq default** (not Claude-mandatory), validated against 50 real-world logs across 11 vehicle types.
 - **Imported** (small, MIT, same author — no licensing question): `tests/data/sample_logs/` (6 clean/flawed fixture logs across `.ulg`/`.bin`/`.tlog` + generator script, ~1.5 MB) and `backend/services/parameter-engine/data/` (PX4 v1.13/v1.14 param defaults + safe-range JSON, ~7 KB). Both have provenance READMEs.
 - **Deliberately not imported:** `flightmd_core` source/API/frontend (stays a pinned dependency per ADR-0001/REPOSITORY_STRUCTURE §2 rule 1, never vendored); the 8.5 GB real-world validation corpus (no Git LFS yet — recorded as a bench-task candidate, not a silent multi-GB commit).
 - **ADR-0018** + **Review R4** (7 findings, F26–F32) in DECISIONS.md: AI-enhancement now structurally off-by-default in UAOP's integration (strengthens air-gap posture — this was a correction *toward* better security, not a new risk); `ASCENT_PROFILE` category filtered at the integration boundary; explicit boundary rule that UAOP never consumes FlightMD's own fleet-ops features; RISK_REGISTER R-6 narrowed to the UAOP-native LSTM tier only.
-- Corrected: AI_ENGINE.md (v0.1.1), MASTER_CONTEXT.md §10, PRODUCT_REQUIREMENTS.md (UAOP-HLR-031 offline-by-default clause), RISK_REGISTER.md R-6, PROJECT_STRUCTURE.md (v0.1.2), TESTING.md (v0.1.1). IMPLEMENTATION_PLAN.md → v0.2.1: M2.3 gains tlog-replay fixtures, M4.4 marked de-risked, Phase 2/M9 forward-note added, bench-task list gains the LFS+corpus option.
+- Corrected: AI_ENGINE.md (v0.1.1), MASTER_CONTEXT.md §10, PRODUCT_REQUIREMENTS.md (UAOP-HLR-031 offline-by-default clause), RISK_REGISTER (private) R-6, PROJECT_STRUCTURE.md (v0.1.2), TESTING.md (v0.1.1). IMPLEMENTATION_PLAN.md → v0.2.1: M2.3 gains tlog-replay fixtures, M4.4 marked de-risked, Phase 2/M9 forward-note added, bench-task list gains the LFS+corpus option.
 
 **M0 status:** unchanged from 2026-07-06 — no M0 tasks executed this session, only the FlightMD inspection/import/doc-correction work above.
 
@@ -158,7 +158,7 @@ The "one Docker click" turned out to be a genuine local-environment bug hunt, no
 
 **Root cause:** Windows Defender real-time protection was intercepting reparse-point (Unix-socket-emulation) operations under `AppData\Local\Docker\` and `AppData\Local\docker-secrets-engine\` — Docker could create these special socket files but not delete/replace them on the next startup, and neither could an elevated `Remove-Item` or `fsutil reparsepoint delete` (both failed with the identical OS-level error even as Administrator, which was the tell that this wasn't an ordinary permissions problem).
 
-**Fix:** `Add-MpPreference -ExclusionPath 'C:\Users\akass\AppData\Local\Docker','C:\Users\akass\AppData\Local\docker-secrets-engine'` (elevated), then one final elevated deletion of both stale files, then relaunch. **Engine came up clean and stayed stable.**
+**Fix:** `Add-MpPreference -ExclusionPath "$env:LOCALAPPDATA\Docker","$env:LOCALAPPDATA\docker-secrets-engine"` (elevated), then one final elevated deletion of both stale files, then relaunch. **Engine came up clean and stayed stable.**
 
 **M0.6 completed:** `bash tools/setup.sh up` — NATS, TimescaleDB, Redis, MinIO all `Up ... (healthy)`, confirmed stable 3+ minutes later via `docker compose ps`. Build re-verified (3/3 tests), all 4 CI guards re-verified green.
 
@@ -292,15 +292,28 @@ No commits for about 3.5 months after the M2-prep protobuf codegen commit (ADR-0
 
 ---
 
-## 2026-11-11 — market research, positioning (ADR-0023, Review R8), doc drift fixed
+## 2026-11-11 — positioning (ADR-0023, Review R8), doc drift fixed
 
 **Done:**
-- Two verified market-research passes (each claim checked by three verifiers; 18 of 25 and 20 of 25 claims survived). Findings folded into COMPETITOR_ANALYSIS.md v0.2.0, BUSINESS_MODEL.md v0.2.0 and RISK_REGISTER.md v0.2.0. Headlines: Auterion ($130M Series B, PX4-only by all evidence), FlytBase One (air-gapped fleet ops, DJI-centric), Roboto (AI diagnosis of PX4 logs), SmartTune CLI (open-source ArduPilot tuning advice; GPL-derived, so behavioural reference only). No verified product covers the PX4 + ArduPilot evidence loop.
-- **ADR-0023:** UAOP leads as the flight-evidence layer with AirBrief and FlightMD; autopilot neutrality is a Definition-of-Done gate; observer mode beside existing GCSs; new milestone **M2E** (flight-evidence wedge) after M2, pulling forward M3.1, M4.7, M5.2, M5.4 and adding observer mode, the signed evidence bundle, a FlightMD parity matrix and a design-partner checkpoint. Phase 1: 115 → 121.5 focus-days. IMPLEMENTATION_PLAN.md v0.3.0, ROADMAP.md v0.1.1 (gate items 11–12), PRODUCT_REQUIREMENTS.md v0.1.1 (UAOP-HLR-033, -044).
-- New SECURITY_CONTROLS_MAP.md: UAOP controls against OMB M-26-02 Appendix B and the Indian Army AASHVAST test areas. Gaps found: MFA is optional (needed before M3.4 exposes commands), no remote wipe/lock design, no post-mission erase policy compatible with the audit chain, SBOM lacks a dependency-origin column.
-- Doc drift fixed (R8/F58): IMPLEMENTATION_PLAN §0 and §9, README status, CLAUDE.md/AGENTS.md milestone, ROADMAP "current" marker. "Sixty Motion Aerospace" removed as the byline everywhere outside `docs/context/legacy/`: UAOP is the founder's personal project. `main.cpp` Qt organisation name is now "UAOP" (moves the prototype's QSettings location).
+- A market review (kept outside this repository) led to **ADR-0023:** UAOP leads as the flight-evidence layer with AirBrief and FlightMD; autopilot neutrality is a Definition-of-Done gate; observer mode beside existing GCSs; new milestone **M2E** (flight-evidence wedge) after M2, pulling forward M3.1, M4.7, M5.2 and M5.4 and adding observer mode, the signed evidence bundle, a FlightMD parity matrix and a user checkpoint. Phase 1: 115 → 121.5 focus-days. IMPLEMENTATION_PLAN.md v0.3.0, ROADMAP.md v0.1.1 (gate items 11–12), PRODUCT_REQUIREMENTS.md v0.1.1 (UAOP-HLR-033, -044).
+- SmartTune CLI (an open-source tuning advisor) states that it replicates ArduPilot WebTools code (GPL-3.0), so it is a behavioural reference only (ADR-0023 §7).
+- Doc drift fixed (R8/F58): IMPLEMENTATION_PLAN §0 and §9, README status, the assistant guide's milestone, ROADMAP "current" marker. UAOP is the founder's personal project; the old company byline is gone and `main.cpp`'s Qt organisation name is now "UAOP".
 - RTM regenerated (it was last generated 2026-07-06 and missed the M1.4 annotations).
 
-**Founder actions (not code):** run the COMPETITOR_ANALYSIS.md §5 checks (an ArduPilot `.bin` on the Roboto and Auterion free tiers); decide OQ-4 before any design-partner agreement; incorporate and get DPIIT recognition before the next ADITI/iDEX call; line up the five M2E.6 conversations.
-
 **Next:** M2.1 (`middleware/mavlink-bridge` v0), keeping ArduPilot in scope from the first frame.
+
+---
+
+## 2026-11-12 — repository cleanup, Apache-2.0 (ADR-0024, Review R9)
+
+**Done:**
+- PR #2 (`dev` → `main`): the proto-contract job failed in `buf-setup-action` on the anonymous GitHub API rate limit. Fixed by pinning buf 1.71.0 and passing the workflow token (a8eff00); PR #2 green.
+- Licence: Apache-2.0 (`LICENSE`, `NOTICE`), resolving OQ-4 for this repository (ADR-0024).
+- Root brought to the FlightMD/AirBrief standard: README rewritten around the product; CONTRIBUTING.md (the development rules, previously only in the assistant guides) and SECURITY.md added; `.editorconfig`, `.gitattributes` (LF, explicit binaries), `.github/dependabot.yml` (weekly, grouped, to `dev`).
+- Business, market and strategy documents (business model, market analysis, risk register, security-controls map) moved out of this public repository (MASTER_CONTEXT.md §13).
+- Removed from the tree (history keeps them): `docs/context/legacy/`, `external-resources/README.md` (folder now fully git-ignored), all 79 `.gitkeep` placeholders, `AGENTS.md`. The assistant guide moved to `.claude/CLAUDE.md` and imports CONTRIBUTING.md.
+- PROJECT_STRUCTURE.md is now explicitly a target layout; REPOSITORY_STRUCTURE.md and the doc-link checker updated.
+
+**Founder actions:** set the GitHub description and topics, enable private vulnerability reporting, merge PR #2 (done by hand on GitHub).
+
+**Next:** M2.1.

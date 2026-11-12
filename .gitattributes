@@ -1,0 +1,25 @@
+# LF everywhere, in the repository and on checkout (Windows editors included).
+* text=auto eol=lf
+
+# Windows scripts keep CRLF.
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+
+# Binary: never touch line endings or diff as text.
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.gif     binary
+*.ico     binary
+*.pdf     binary
+*.ttf     binary
+*.otf     binary
+*.woff    binary
+*.woff2   binary
+*.mbtiles binary
+*.ulg     binary
+*.bin     binary
+*.tlog    binary
+*.zip     binary
+*.gz      binary
