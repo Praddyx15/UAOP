@@ -1,81 +1,72 @@
-# UAOP — Unified Autonomy Operating Platform
+# UAOP
 
-A personal project by Pradum Behl · Status: **Phase 1 in development** (M0 and M1 done, M2 next) · Positioning: **ADR-0023, 2026-11-11**
+The flight-evidence layer for PX4 and ArduPilot drones: capture every flight, keep a tamper-evident
+record of it, and prove what happened, offline.
 
-UAOP is an operational platform that sits **above** existing UAV autonomy ecosystems — PX4, ArduPilot, MAVLink, ROS 2, Gazebo — and unifies ground control, deep tuning, simulation, AI diagnostics, fleet operations, and regulatory compliance into one coherent, deployable edge-to-cloud product.
+[![CI](https://github.com/Praddyx15/UAOP/actions/workflows/pr.yml/badge.svg?branch=main)](https://github.com/Praddyx15/UAOP/actions/workflows/pr.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
-UAOP is **not** another ground control station and **not** another autopilot. It does not fork or replace the open ecosystems it integrates; it composes them through adapters and presents a single operational surface.
+UAOP (Unified Autonomy Operating Platform) runs on a laptop or an edge computer next to the
+aircraft. It talks to the autopilot over MAVLink, records the flight, and logs every command and
+parameter change in a record that shows if anything was altered. After the flight it brings
+together the log, the parameters, the [FlightMD](https://github.com/Praddyx15/FlightMD) diagnosis
+and the [AirBrief](https://github.com/Praddyx15/AirBrief) pre-flight brief, so anyone can check
+what happened without an internet connection.
 
-**Where it starts (ADR-0023):** UAOP is the **flight-evidence layer** for PX4 and ArduPilot alike. With its sister projects [AirBrief](https://github.com/Praddyx15/AirBrief) (pre-flight brief) and [FlightMD](https://github.com/Praddyx15/FlightMD) (log diagnosis, tune-fly-verify), it records that an aircraft was briefed, flown, diagnosed and reviewed, in a signed bundle anyone can verify offline. It can fly the vehicle itself or sit beside QGroundControl or Mission Planner in observer mode.
+It sits above the autopilot and never replaces it: PX4 and ArduPilot keep flying the aircraft. It
+can also sit beside QGroundControl or Mission Planner and only observe. It reports evidence; it
+never says go or no-go.
 
----
+> **Status: early development.** UAOP is a personal project. The foundations are built and tested;
+> live telemetry is next. Nothing here is certified or ready to fly with.
 
-## What problem does UAOP solve?
+## Status
 
-Professional UAV operations today require six or more disconnected tools: a GCS (QGroundControl / Mission Planner), tuning workflows buried inside the GCS, ROS 2 introspection (RViz/rqt), simulation (Gazebo/SITL), log analysis (Flight Review), and ad-hoc fleet/compliance tooling. Each works alone; none work together. UAOP's thesis: **the integration layer is the product.**
-
-## Deployment model
-
-| Tier | Purpose | Phase |
+| Milestone | What it delivers | State |
 |---|---|---|
-| **Workstation** | Development, simulation, training | 1 |
-| **Edge Node** | Field operations near the aircraft — the primary product | 1–3 |
-| **Cloud** | Fleet analytics, multi-site enterprise, compliance archive | 4 |
+| M0 | Toolchain, CI on x86_64 and ARM64, desktop shell | Done |
+| M1 | Message contracts, platform plumbing, storage | Done |
+| M2 | First live telemetry from a simulated drone | Next |
+| M2E | Flight evidence for PX4 and ArduPilot, observer mode | Planned |
+| M3–M7 | Commands, missions and parameters, compliance, hardening | Planned |
 
-The Edge Node must operate fully **without internet connectivity** (air-gap mode is a supported deployment configuration, not a degraded one).
+## Works with FlightMD and AirBrief
 
-## Technology spine (fixed — see [DECISIONS.md](docs/00_Project_Foundation/DECISIONS.md) before proposing changes)
+- [**AirBrief**](https://github.com/Praddyx15/AirBrief) answers the questions before take-off:
+  airspace, terrain, who is underneath, line of sight. UAOP keeps the brief with the flight.
+- [**FlightMD**](https://github.com/Praddyx15/FlightMD) reads the log afterwards and says what went
+  wrong and which parameter to change. UAOP runs it on every captured log and tells FlightMD when a
+  recommended change was applied, so the next report shows whether it worked.
 
-- **Services:** C++17 microservices (Drogon) · Python 3.11 (FastAPI) for AI/simulation orchestration
-- **Desktop GCS:** Qt 6 / QML — professional aerospace UI, dense information, dockable panels
-- **Messaging:** NATS JetStream internal bus · MAVLink v2 · ROS 2 (DDS) · gRPC · WebSocket
-- **Data:** PostgreSQL 15 + TimescaleDB (telemetry to 1000 Hz) · Redis 7 · MinIO
-- **Simulation:** Gazebo + PX4 SITL / ArduPilot SITL
-- **Compliance:** DO-178C-aligned processes, MISRA C++, requirements traceability from day one
+## Try it
 
-## Documentation map
+You need Docker, CMake 3.25+, Ninja, a C++20 compiler, protobuf and Python 3.11+. The desktop app
+also needs Qt 6.8 or later.
 
-All engineering documentation lives in [`docs/`](docs/) as a **living design system** in nine numbered areas (`00_Project_Foundation` → `08_Developer_Handbook`), evolved incrementally with a mandatory critical review after every document — see [DOCUMENTATION_PROCESS](docs/08_Developer_Handbook/DOCUMENTATION_PROCESS.md). Start here:
-
-| Area | Documents |
-|---|---|
-| Foundation | [MASTER_CONTEXT](docs/00_Project_Foundation/MASTER_CONTEXT.md) · [VISION](docs/00_Project_Foundation/VISION.md) · [MISSION](docs/00_Project_Foundation/MISSION.md) · [PRODUCT_REQUIREMENTS](docs/00_Project_Foundation/PRODUCT_REQUIREMENTS.md) |
-| Architecture | [SYSTEM_ARCHITECTURE](docs/02_System_Architecture/SYSTEM_ARCHITECTURE.md) · [SOFTWARE_ARCHITECTURE](docs/03_Software_Architecture/SOFTWARE_ARCHITECTURE.md) · [HARDWARE_ARCHITECTURE](docs/02_System_Architecture/HARDWARE_ARCHITECTURE.md) · [EDGE_ARCHITECTURE](docs/02_System_Architecture/EDGE_ARCHITECTURE.md) · [CLOUD_ARCHITECTURE](docs/02_System_Architecture/CLOUD_ARCHITECTURE.md) · [MICROSERVICES](docs/03_Software_Architecture/MICROSERVICES.md) |
-| Flows & extension | [DATA_FLOW](docs/02_System_Architecture/DATA_FLOW.md) · [EVENT_FLOW](docs/02_System_Architecture/EVENT_FLOW.md) · [PLUGIN_SYSTEM](docs/01_Product_Architecture/PLUGIN_SYSTEM.md) · [SDK_DESIGN](docs/01_Product_Architecture/SDK_DESIGN.md) · [API_SPECIFICATION](docs/03_Software_Architecture/API_SPECIFICATION.md) |
-| Integrations | [MAVLINK_INTEGRATION](docs/02_System_Architecture/MAVLINK_INTEGRATION.md) · [ROS2_INTEGRATION](docs/02_System_Architecture/ROS2_INTEGRATION.md) · [SIMULATION_ARCHITECTURE](docs/02_System_Architecture/SIMULATION_ARCHITECTURE.md) · [DIGITAL_TWIN](docs/01_Product_Architecture/DIGITAL_TWIN.md) |
-| Engines | [MISSION_ENGINE](docs/01_Product_Architecture/MISSION_ENGINE.md) · [TELEMETRY_ENGINE](docs/01_Product_Architecture/TELEMETRY_ENGINE.md) · [TUNING_ENGINE](docs/01_Product_Architecture/TUNING_ENGINE.md) · [AI_ENGINE](docs/01_Product_Architecture/AI_ENGINE.md) · [FLEET_MANAGEMENT](docs/01_Product_Architecture/FLEET_MANAGEMENT.md) |
-| Operations | [DEPLOYMENT](docs/05_Deployment_Architecture/DEPLOYMENT.md) · [SECURITY](docs/06_Compliance_and_Quality/SECURITY.md) · [COMPLIANCE](docs/06_Compliance_and_Quality/COMPLIANCE.md) · [VALIDATION](docs/06_Compliance_and_Quality/VALIDATION.md) · [TESTING](docs/06_Compliance_and_Quality/TESTING.md) · [CI_CD](docs/05_Deployment_Architecture/CI_CD.md) · [DEVOPS](docs/05_Deployment_Architecture/DEVOPS.md) · [DATABASE](docs/03_Software_Architecture/DATABASE.md) · [LOGGING](docs/05_Deployment_Architecture/LOGGING.md) · [OBSERVABILITY](docs/05_Deployment_Architecture/OBSERVABILITY.md) · [SECURITY_CONTROLS_MAP](docs/06_Compliance_and_Quality/SECURITY_CONTROLS_MAP.md) |
-| UI & standards | [UI_GUIDELINES](docs/04_UI_Architecture/UI_GUIDELINES.md) · [UX_GUIDELINES](docs/04_UI_Architecture/UX_GUIDELINES.md) · [STYLE_GUIDE](docs/04_UI_Architecture/STYLE_GUIDE.md) · [REPOSITORY_STRUCTURE](docs/08_Developer_Handbook/REPOSITORY_STRUCTURE.md) · [CODING_STANDARDS](docs/08_Developer_Handbook/CODING_STANDARDS.md) |
-| Governance | [DECISIONS](docs/00_Project_Foundation/DECISIONS.md) · [ROADMAP](docs/00_Project_Foundation/ROADMAP.md) · [RISK_REGISTER](docs/00_Project_Foundation/RISK_REGISTER.md) · [COMPETITOR_ANALYSIS](docs/00_Project_Foundation/COMPETITOR_ANALYSIS.md) · [BUSINESS_MODEL](docs/00_Project_Foundation/BUSINESS_MODEL.md) |
-| Implementation | [IMPLEMENTATION_PLAN](docs/07_Implementation_Guides/IMPLEMENTATION_PLAN.md) · [PROJECT_STRUCTURE](docs/07_Implementation_Guides/PROJECT_STRUCTURE.md) · [DOCUMENTATION_PROCESS](docs/08_Developer_Handbook/DOCUMENTATION_PROCESS.md) |
-
-## Governance rules
-
-1. [MASTER_CONTEXT.md](docs/00_Project_Foundation/MASTER_CONTEXT.md) is the constitution. On conflict, it wins; conflicts are resolved only through an ADR in [DECISIONS.md](docs/00_Project_Foundation/DECISIONS.md).
-2. No technology enters the stack without an ADR stating the engineering reason and the rejected alternatives.
-3. Flight-critical modules carry `@req:` traceability annotations from the first commit — traceability is never retrofitted.
-4. AI output is **advisory only**: confidence-scored, audit-logged, operator decides.
-5. Air-gap operation is a permanent requirement. No service may hard-depend on an external network.
-
-## Repository layout (summary)
-
-```
-uaop-platform/
-├── api/proto/            # Protobuf + gRPC contracts (the platform's data constitution)
-├── backend/
-│   ├── api-gateway/
-│   └── services/         # telemetry-engine, mission-engine, ai-engine, compliance-engine, remote-id, ...
-├── middleware/           # mavlink-bridge, ros2-bridge
-├── frontend/qt-desktop-gcs/
-├── infrastructure/docker/compose/
-├── tests/                # unit, integration, sitl, compliance
-└── docs/                 # everything linked above
+```bash
+git clone https://github.com/Praddyx15/UAOP.git && cd UAOP
+./tools/setup.sh up      # local services in Docker, then build, test and run the checks
+./tools/setup.sh sitl    # optional: adds a PX4 simulator (MAVLink on udp:14550)
+./tools/setup.sh down    # stop everything
 ```
 
-Full rationale: [REPOSITORY_STRUCTURE.md](docs/08_Developer_Handbook/REPOSITORY_STRUCTURE.md).
+Build and test by hand:
 
----
+```bash
+cmake --preset debug && cmake --build --preset debug && ctest --preset debug
+cmake --preset gcs-debug -DCMAKE_PREFIX_PATH=/path/to/Qt/6.x/gcc_64 \
+  && cmake --build --preset gcs-debug && ctest --preset gcs-debug
+```
 
-Part of the UAV suite: [FlightMD](https://github.com/Praddyx15/FlightMD) (flight-log analysis, runs inside UAOP's flight-log-engine, ADR-0022) · AeroAtlas (geospatial pre-flight evidence) · UAOP. The suite name is a placeholder; in the GCS it is `SUITE_NAME` in `frontend/qt-desktop-gcs/src/core/Suite.h`.
+## Contributing and security
 
-*Implementation is under way: M0 and M1 are complete, M2 (first telemetry slice) is next, followed by M2E (the flight-evidence wedge). Current status: [IMPLEMENTATION_PLAN.md §0](docs/07_Implementation_Guides/IMPLEMENTATION_PLAN.md); session log: [progress.md](docs/context/phase-1/progress.md); market position: [COMPETITOR_ANALYSIS.md](docs/00_Project_Foundation/COMPETITOR_ANALYSIS.md).*
+[CONTRIBUTING.md](CONTRIBUTING.md) has the rules every change follows and where the design
+documents live. [SECURITY.md](SECURITY.md) explains how to report a vulnerability.
+
+## Licence
+
+Apache-2.0 ([LICENSE](LICENSE), [NOTICE](NOTICE)). Bundled third-party material is listed in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), each under its own licence.
+
+UAOP is development software. It is not certified, it is not an airworthiness or safety
+determination, and it does not replace any authorisation a flight needs.

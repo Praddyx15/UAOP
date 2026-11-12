@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Documentation link checker (DOCUMENTATION_PROCESS.md section 6).
 
-Verifies every relative .md link in docs/, README.md, CLAUDE.md, AGENTS.md, and
-in-tree READMEs resolves to an existing file. ADR references (ADR-NNNN) in docs/
+Verifies every relative .md link in docs/, README.md, CONTRIBUTING.md, SECURITY.md,
+and in-tree READMEs resolves to an existing file. ADR references (ADR-NNNN) in docs/
 must exist in DECISIONS.md.
 """
 

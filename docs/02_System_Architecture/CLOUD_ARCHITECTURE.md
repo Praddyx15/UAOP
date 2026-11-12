@@ -62,7 +62,7 @@ Org-per-schema isolation in PostgreSQL (not row-level only): defense and enterpr
 | fleet-service | Fleet aggregates, availability, maintenance state | Reads projections, no vehicle authority |
 | analytics-service | Cross-flight trends, fleet health models | Batch; may train models later — deployment of models back to edge goes through the signed update path |
 | archive-service | Long-term compliance archive, legal hold, export | WORM-style retention on audit data |
-| org/auth-service | OIDC IdP federation, RBAC, licensing | Licensing enforcement is cloud-side for cloud features only — edge never phones home to keep flying (see BUSINESS_MODEL.md) |
+| org/auth-service | OIDC IdP federation, RBAC, licensing | Licensing enforcement is cloud-side for cloud features only — edge never phones home to keep flying (see BUSINESS_MODEL (private)) |
 
 ## 6. Failure modes
 

@@ -148,11 +148,11 @@ Development is founder-led, with AI tooling used to accelerate drafting, review,
 | OQ-1 | `dji-service/` and `fpv-service/` exist in the repo but in no planning document. Is DJI (MSDK/Cloud API) and analog/digital FPV support in scope? If so, which phase? | Phase scoping only | DECISIONS.md §Open |
 | ~~OQ-2~~ | RESOLVED 2026-07-04 (R2/F16): `middleware/mavlink-bridge/` created; separate-service boundary holds. | — | DECISIONS.md §R2 |
 | ~~OQ-3~~ | RESOLVED 2026-07-07 (R6/ADR-0020): interim MBTiles raster renderer shipped; MapLibre Native Qt deferred (Qt version mismatch — see ADR-0020). | — | DECISIONS.md §R6 |
-| OQ-4 | Platform licensing model (open-core vs proprietary) — affects SDK and marketplace design. | Phase 4 | BUSINESS_MODEL.md |
-| OQ-5 | Business model pricing figures are proposals, not founder-validated. | None | BUSINESS_MODEL.md |
+| ~~OQ-4~~ | **Resolved 2026-11-12 (ADR-0024):** Apache-2.0 for this repository; commercial modules, if any, live outside it. | None | DECISIONS.md (ADR-0024) |
+| OQ-5 | Pricing and packaging are proposals, not validated with users. | None | Kept outside this repository |
 | OQ-6 | GCS emergency direct-connect: embed a minimal MAVLink client in the GCS for situational awareness + EMERGENCY commands if the edge node dies mid-flight? (Review R1/F9.) | Phase 2 planning | DECISIONS.md §Open |
 | OQ-7 | UI plugin isolation model: declarative-only panels vs out-of-process rendering vs signed-trust acceptance. (Review R1/F10.) | Phase 4 planning | DECISIONS.md §Open |
 
 ## 13. Public positioning constraints
 
-Public communications may reference ROS 2, Gazebo, AirSim, MAVLink, PX4, ArduPilot. Implementation details (bus technology, service topology, compliance tooling, UI design) are confidential. Job-application/LinkedIn usage: brief mention demonstrating systems thinking; UAOP is always described as a personal project in architecture phase, never as deployed.
+Public communications (the README, posts, talks) may reference ROS 2, Gazebo, AirSim, MAVLink, PX4 and ArduPilot. They do not advertise implementation details (bus technology, service topology, compliance tooling, UI design); those live in the design documents for contributors. Business, market and strategy material is kept outside this repository. UAOP is always described as a personal project in early development, never as deployed.

@@ -60,7 +60,7 @@ uaop-platform/
 │   ├── api/                      Generated API reference
 │   ├── context/                  Phase validation evidence, progress.md per phase
 │   └── scaling/                  Capacity/benchmark records
-└── external-resources/           Reference material only — NEVER imported/linked by build
+└── external-resources/           Local only, git-ignored — NEVER imported/linked by build
                                   (ecosystem repo studies per Master Context; keep out of packaging)
 ```
 
@@ -70,7 +70,7 @@ uaop-platform/
 2. **Service directories are sovereign:** own `CMakeLists.txt`/`pyproject.toml`, own `migrations/`, own tests co-located, own README (purpose + catalog link). Cross-service C++ sharing only via `services/common/` (its API reviewed like a public contract — the common-library-becomes-a-monolith failure mode is reviewed against explicitly).
 3. **`api/proto/` is the only shared truth:** generated code is build-time output, never committed.
 4. **CODEOWNERS mirrors criticality:** DAL C-equiv paths (mavlink-bridge, vehicle-manager, mission/parameter transfer paths, remote-id, compliance-engine) require two reviews (CI_CD.md §1).
-5. **`external-resources/` hygiene:** study material excluded from builds, packaging, licensing scans, and release artifacts (its licenses are not our licenses). Git-ignored except its README (rules live there); UAV/robotics reference repos only. The unrelated agent-tooling content that once lived here was removed 2026-07-04 (review R2/F15).
+5. **`external-resources/` hygiene:** study material excluded from builds, packaging, licensing scans, and release artifacts (its licenses are not our licenses). Git-ignored entirely since 2026-11-12 (the rules live here); UAV/robotics reference repos only. The unrelated agent-tooling content that once lived here was removed 2026-07-04 (review R2/F15).
 6. **Naming:** kebab-case directories/services; proto packages `uaop.<domain>.v1`; NATS subjects mirror proto packages (EVENT_FLOW.md §1); C++ namespaces `uaop::<domain>`.
 
 ## 3. Build orchestration

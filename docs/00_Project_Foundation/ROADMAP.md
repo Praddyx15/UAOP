@@ -76,7 +76,7 @@
 
 **Deliverables:** fleet-management engine + cloud tier (sync, org isolation, Next.js fleet dashboard — ADR-0002 scope); plugin SDK (three deliverables, SDK_DESIGN.md) + marketplace backend; UTM live integrations (LAANC, U-Space, Digital Sky); security hardening (mTLS mesh, FIPS build variant, HSM interface, SROS2 option, gateway runtime revisit per ADR-0004); DO-178C package completion (SVP, SQA records, SAS, 100% RTM); OTA at fleet scale; licensing per OQ-4.
 
-**Dependencies:** Phase 3 gate; OQ-4/OQ-5 resolved; first design-partner customer identified (BUSINESS_MODEL.md).
+**Dependencies:** Phase 3 gate; OQ-4/OQ-5 resolved; first design-partner customer identified (BUSINESS_MODEL (private)).
 **Risks:** R-3 (certification cost), R-7 (competitor response), R-12 (single-founder company risk at commercial stage).
 
 **Exit criteria:** two-org tenancy demo with RBAC-scoped fleet ops over real sync; third-party-authored plugin passes marketplace pipeline and runs sandboxed; air-gap courier sync round-trip; penetration test by external party with findings dispositioned; DO-178C↔DO-278A package review by external DER-experienced consultant; a paying or committed design partner operating a pilot deployment.

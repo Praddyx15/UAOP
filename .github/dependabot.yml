@@ -1,0 +1,42 @@
+# Weekly dependency updates (free for public repositories). Security updates arrive as soon as
+# GitHub publishes an advisory, independent of this schedule. Pull requests target dev.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/backend/api-gateway"
+    target-branch: dev
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    # major versions are migrations: done by hand, one at a time
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      api-gateway:
+        patterns: ["*"]
+  - package-ecosystem: pip
+    directory: "/backend/services/flight-log-engine/analysis-sidecar"
+    target-branch: dev
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      analysis-sidecar:
+        patterns: ["*"]
+  - package-ecosystem: pip
+    directory: "/tests/integration/idempotency"
+    target-branch: dev
+    schedule:
+      interval: weekly
+    groups:
+      idempotency-tests:
+        patterns: ["*"]
+  - package-ecosystem: github-actions
+    directory: "/"
+    target-branch: dev
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
