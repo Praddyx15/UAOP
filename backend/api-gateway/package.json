@@ -10,14 +10,14 @@
     "test": "node --test"
   },
   "dependencies": {
-    "@grpc/grpc-js": "^1.12.5",
-    "@grpc/proto-loader": "^0.7.13",
-    "express": "^4.21.2",
+    "@grpc/grpc-js": "^1.14.7",
+    "@grpc/proto-loader": "^0.8.1",
+    "express": "^4.22.3",
     "google-proto-files": "^4.2.0",
     "ioredis": "^5.4.2",
     "jsonwebtoken": "^9.0.2",
     "nats": "^2.29.1",
-    "ws": "^8.18.0"
+    "ws": "^8.22.2"
   },
   "engines": {
     "node": ">=20"
