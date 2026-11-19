@@ -12,8 +12,8 @@ jobs:
     name: guards (frozen dirs, doc links, licenses)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with: { python-version: "3.12" }
       - run: python tools/ci/check_frozen_dirs.py
       - run: python tools/ci/check_doc_links.py
@@ -26,7 +26,7 @@ jobs:
     name: proto contract (buf lint + breaking)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
         with: { fetch-depth: 0 } # buf breaking needs main's history to diff against
       - uses: bufbuild/buf-setup-action@a47c93e0b1648d5651a065437926377d060baa99 # v1.50.0
         # Pinned version + the workflow token: without them the action resolves "latest" through
@@ -52,7 +52,7 @@ jobs:
     name: build+test linux x86_64
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
       - run: sudo apt-get update && sudo apt-get install -y ninja-build protobuf-compiler libprotobuf-dev
       - run: cmake --preset debug
       - run: cmake --build --preset debug
@@ -62,7 +62,7 @@ jobs:
     name: build+test linux arm64 (UAOP-NFR-007)
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
       - run: sudo apt-get update && sudo apt-get install -y ninja-build protobuf-compiler libprotobuf-dev
       - run: cmake --preset debug
       - run: cmake --build --preset debug
@@ -72,8 +72,8 @@ jobs:
     name: build+test GCS (linux, Qt 6.11)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with: { python-version: "3.12" }
       - run: pip install aqtinstall==3.3.0
       # qtshadertools is a separate addon module (confirmed via `aqt list-qt --modules`)
@@ -104,7 +104,7 @@ jobs:
     name: trivy fs scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
       - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: fs
