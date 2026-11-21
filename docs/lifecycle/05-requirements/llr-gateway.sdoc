@@ -1,0 +1,234 @@
+[DOCUMENT]
+TITLE: UAOP low-level requirements: API gateway
+UID: UAOP-LLR-GW
+VERSION: Issue 1
+DATE: 2026-11-21
+OPTIONS:
+  MARKUP: Markdown
+
+[GRAMMAR]
+IMPORT_FROM_FILE: ../02-standards/requirements.sgra
+
+[TEXT]
+STATEMENT: >>>
+Low-level requirements of the API gateway (`backend/api-gateway/src/`), written from the code as read on 2026-11-21. The gateway is the only built item on the command and telemetry paths, which is why it is the one item with requirements at this level. Design: `docs/lifecycle/06-design/lld-gateway.md`. Where the code does less than a high-level requirement asks, the gap is a problem report and the requirement here states what the code does.
+<<<
+
+[[SECTION]]
+TITLE: Command forwarding (`routes/commands.js`)
+
+[REQUIREMENT]
+UID: LLR-GW-001
+STATUS: Active
+STATEMENT: >>>
+The command table maps exactly ARM, DISARM, MODE, RTL, TAKEOFF, LAND and MISSION_START to `COMMAND_KIND_<name>`. Lookup is by exact, case-sensitive match of the `command` field of the JSON body.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-GW-001
+
+[REQUIREMENT]
+UID: LLR-GW-002
+STATUS: Active
+STATEMENT: >>>
+When the lookup fails, or the body or `command` is missing, the route answers 400 with `{error: {code: "ERROR_CODE_INVALID_ARGUMENT", message}}` before any service client is obtained.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-GW-002
+
+[REQUIREMENT]
+UID: LLR-GW-003
+STATUS: Active
+STATEMENT: >>>
+The `SubmitCommand` request is built as: `vehicleId` from the path segment unchanged, `command` from the table, `params` from the body or an empty object, `idempotencyKey` from the `Idempotency-Key` header or an empty string.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway
+COMMENT: No check of the vehicle identifier or of `params` (PR-010).
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-GW-001
+- TYPE: Parent
+  VALUE: HLR-GW-005
+
+[REQUIREMENT]
+UID: LLR-GW-004
+STATUS: Active
+STATEMENT: >>>
+On a successful `SubmitCommand` the route answers 202 with `{correlation_id}`. On a call error it answers 502 with `{error: {code: "ERROR_CODE_UNAVAILABLE", message}}` carrying the error text. The call is made without a deadline.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-GW-001
+- TYPE: Parent
+  VALUE: HLR-GW-003
+
+[REQUIREMENT]
+UID: LLR-GW-005
+STATUS: Active
+STATEMENT: >>>
+`GET /commands/{correlationId}` calls `GetCommandResult` with the path value and answers 200 with the `result` object, or 502 with `ERROR_CODE_UNAVAILABLE` on a call error.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-GW-004
+
+[REQUIREMENT]
+UID: LLR-GW-006
+STATUS: Active
+STATEMENT: >>>
+Service clients are created once per service name and target address and reused; the default target is `localhost:50051` (`UAOP_GATEWAY_GRPC_TARGET`) and the channel is not encrypted.
+<<<
+VERIFICATION: Inspection
+VERIFICATION_NOTE: A configuration property; reviewed against `grpc/client.js` and `config.js`.
+ALLOCATION: gateway
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-GW-001
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: Authentication (`auth/`, `index.js`)
+
+[REQUIREMENT]
+UID: LLR-GW-007
+STATUS: Active
+STATEMENT: >>>
+The authentication step reads the `Authorization` header, requires the form `Bearer <token>`, verifies the token with HS256 and the configured secret, and looks its identifier up in the revoked list. It answers 401 with `ERROR_CODE_UNAUTHENTICATED` when the header is missing or malformed, the token is invalid or expired, or the identifier is revoked. Otherwise it attaches subject, role, organisation, token identifier and expiry to the request.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-GW-006
+
+[REQUIREMENT]
+UID: LLR-GW-008
+STATUS: Active
+STATEMENT: >>>
+Handlers are installed in this order: JSON body parser, health route, login and logout routes, authentication step, command routes. Only handlers after the authentication step are protected by it.
+<<<
+VERIFICATION: Inspection
+VERIFICATION_NOTE: Order of installation in `index.js`.
+ALLOCATION: gateway
+COMMENT: Logout is installed before the step that identifies the caller (PR-015). The WebSocket is not an HTTP handler and is not protected (PR-004).
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-GW-006
+
+[REQUIREMENT]
+UID: LLR-GW-009
+STATUS: Active
+STATEMENT: >>>
+Tokens are signed with HS256, live `UAOP_GATEWAY_JWT_TTL_SECONDS` seconds (default 3600) and carry subject, role, organisation and a unique identifier. A role outside the six defined roles is refused at issue.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway
+COMMENT: The secret falls back to a fixed development value when the variable is unset (PR-007).
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-GW-006
+
+[REQUIREMENT]
+UID: LLR-GW-010
+STATUS: Active
+STATEMENT: >>>
+Revoking stores the token identifier in Redis with a life equal to the token's remaining life; a remaining life of zero or less stores nothing. A stored identifier is reported as revoked.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-GW-007
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: Stream relay (`streams/websocket.js`)
+
+[REQUIREMENT]
+UID: LLR-GW-011
+STATUS: Active
+STATEMENT: >>>
+A `subscribe` message first cancels every bus subscription of the connection and clears its stream states, then for each requested telemetry category subscribes to `uaop.telemetry.v1.<vehicle>.<category>` under the stream key `telemetry.<vehicle>.<category>`, and for each requested event domain subscribes to `uaop.event.v1.<domain>.>` under `events.<domain>`.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway
+COMMENT: The vehicle, category and domain strings are used unchecked (PR-004).
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-GW-008
+
+[REQUIREMENT]
+UID: LLR-GW-012
+STATUS: Active
+STATEMENT: >>>
+Each relayed message is sent as `{stream, seq, ts, payload}`: `seq` starts at 1 and rises by 1 per relayed frame of that stream on that connection, `ts` is the gateway's clock at sending in ISO 8601, `payload` is the message bytes in base64. Nothing is sent when the socket is not open.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway
+COMMENT: `ts` is not the source time (PR-006).
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-GW-008
+
+[REQUIREMENT]
+UID: LLR-GW-013
+STATUS: Active
+STATEMENT: >>>
+A telemetry stream with `rate_hz` greater than zero relays a message only when at least `1000 / rate_hz` milliseconds have passed since the last relayed one, and otherwise adds 1 to the stream's dropped count. A stream with no rate, or a rate of zero or less, and every event stream, relays every message.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-GW-009
+
+[REQUIREMENT]
+UID: LLR-GW-014
+STATUS: Active
+STATEMENT: >>>
+When a message is relayed and the stream's dropped count is above zero, the gateway first sends `{op: "gap", stream, dropped}` and sets the count to zero.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway
+COMMENT: No gap frame is sent while no further message is relayed (FMEA T4).
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-GW-009
+
+[REQUIREMENT]
+UID: LLR-GW-015
+STATUS: Active
+STATEMENT: >>>
+From connection until close the gateway sends `{op: "heartbeat", ts}` every `UAOP_GATEWAY_WS_HEARTBEAT_MS` milliseconds (default 5000); on close it stops the timer and cancels the connection's bus subscriptions.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-GW-010
+
+[REQUIREMENT]
+UID: LLR-GW-016
+STATUS: Active
+STATEMENT: >>>
+A client message that is not valid JSON is answered with `{op: "error", message: "invalid JSON"}`; a message whose `op` is not `subscribe` is answered with an error frame naming the operation. The connection stays open in both cases.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-GW-008
+
+[[/SECTION]]
