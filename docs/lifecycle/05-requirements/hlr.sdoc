@@ -1,0 +1,627 @@
+[DOCUMENT]
+TITLE: UAOP software high-level requirements
+UID: UAOP-HLR-SET
+VERSION: Issue 1
+DATE: 2026-11-21
+OPTIONS:
+  MARKUP: Markdown
+
+[GRAMMAR]
+IMPORT_FROM_FILE: ../02-standards/requirements.sgra
+
+[TEXT]
+STATEMENT: >>>
+Behaviour of each software item at its interfaces. Active requirements are written from the code and tests as read on 2026-11-21 and are in the present tense; Proposed requirements are for items or behaviour not built. Each has one system requirement as parent (`docs/lifecycle/03-system/system-requirements.sdoc`) and a verification method. VERIFICATION_NOTE names the existing test file where one was seen; tests do not yet carry requirement tags.
+
+These ids (`HLR-<AREA>-nnn`) are a different series from the product requirements `UAOP-HLR-nnn` (see `docs/lifecycle/02-standards/requirements-standard.md`, section 1).
+<<<
+
+[[SECTION]]
+TITLE: API gateway (GW)
+
+[REQUIREMENT]
+UID: HLR-GW-001
+STATUS: Active
+STATEMENT: >>>
+`POST /vehicles/{id}/commands` maps the command name (ARM, DISARM, MODE, RTL, TAKEOFF, LAND, MISSION_START) to its `CommandKind`, calls `SubmitCommand` for the vehicle in the path, and answers 202 with the correlation identifier.
+<<<
+VERIFICATION: Test
+VERIFICATION_NOTE: `backend/api-gateway/tests/grpc-forwarding.test.js`
+ALLOCATION: gateway
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-009
+
+[REQUIREMENT]
+UID: HLR-GW-002
+STATUS: Active
+STATEMENT: >>>
+A command name outside the set is refused with 400 and code `ERROR_CODE_INVALID_ARGUMENT`, and no service call is made.
+<<<
+VERIFICATION: Test
+VERIFICATION_NOTE: `backend/api-gateway/tests/grpc-forwarding.test.js`
+ALLOCATION: gateway
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-009
+
+[REQUIREMENT]
+UID: HLR-GW-003
+STATUS: Active
+STATEMENT: >>>
+When the service call fails the gateway answers 502 with code `ERROR_CODE_UNAVAILABLE`; it never reports a command as accepted or rejected itself.
+<<<
+VERIFICATION: Test
+VERIFICATION_NOTE: No test of the failure branch was seen.
+ALLOCATION: gateway
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-010
+
+[REQUIREMENT]
+UID: HLR-GW-004
+STATUS: Active
+STATEMENT: >>>
+`GET /commands/{correlationId}` returns the `CommandResult` given by `GetCommandResult`.
+<<<
+VERIFICATION: Test
+VERIFICATION_NOTE: `backend/api-gateway/tests/grpc-forwarding.test.js`
+ALLOCATION: gateway
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-010
+
+[REQUIREMENT]
+UID: HLR-GW-005
+STATUS: Active
+STATEMENT: >>>
+The gateway passes the `Idempotency-Key` request header to the service as `idempotency_key`, empty when absent.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway
+COMMENT: Does less than SYS-011 asks: a missing key is not refused (PR-010).
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-011
+
+[REQUIREMENT]
+UID: HLR-GW-006
+STATUS: Active
+STATEMENT: >>>
+The command routes answer 401 unless the request carries a bearer token that verifies (HS256), has not expired and is not on the revoked list.
+<<<
+VERIFICATION: Test
+VERIFICATION_NOTE: `backend/api-gateway/tests/jwt-auth.test.js` covers the token and the list; no test of the middleware on a route was seen.
+ALLOCATION: gateway
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-012
+
+[REQUIREMENT]
+UID: HLR-GW-007
+STATUS: Active
+STATEMENT: >>>
+Logout puts the token's identifier on the revoked list for the rest of the token's life.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway
+COMMENT: The revoked list is built and tested. The logout route as wired cannot reach it (PR-015).
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-012
+
+[REQUIREMENT]
+UID: HLR-GW-008
+STATUS: Active
+STATEMENT: >>>
+On a `subscribe` message at `/ws/v1` the gateway relays each bus message on the requested telemetry and event subjects as a frame with the stream name, a sequence number counting from 1 per stream, a time and the payload in base64, and relays nothing from subjects not requested.
+<<<
+VERIFICATION: Test
+VERIFICATION_NOTE: `backend/api-gateway/tests/websocket-streams.test.js`
+ALLOCATION: gateway
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-007
+
+[REQUIREMENT]
+UID: HLR-GW-009
+STATUS: Active
+STATEMENT: >>>
+For a telemetry stream with `rate_hz` set, the gateway relays at most that many frames per second and reports the number of messages it dropped in a `gap` frame sent before the next relayed frame.
+<<<
+VERIFICATION: Test
+VERIFICATION_NOTE: `backend/api-gateway/tests/websocket-streams.test.js`
+ALLOCATION: gateway
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-007
+
+[REQUIREMENT]
+UID: HLR-GW-010
+STATUS: Active
+STATEMENT: >>>
+The gateway sends a `heartbeat` frame on every open connection at the configured interval, 5 s by default.
+<<<
+VERIFICATION: Test
+VERIFICATION_NOTE: No test was seen.
+ALLOCATION: gateway
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-007
+
+[REQUIREMENT]
+UID: HLR-GW-011
+STATUS: Proposed
+STATEMENT: >>>
+The command routes shall answer 403 unless the token's role may command, and shall pass the actor's identity and role to the service with the call.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway
+COMMENT: PR-005.
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-013
+
+[REQUIREMENT]
+UID: HLR-GW-012
+STATUS: Proposed
+STATEMENT: >>>
+The WebSocket shall refuse a connection without a valid token and shall refuse a subscription whose vehicle, category or domain is not a plain identifier the session may read.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway
+COMMENT: PR-004.
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-012
+
+[REQUIREMENT]
+UID: HLR-GW-013
+STATUS: Proposed
+STATEMENT: >>>
+Each relayed frame shall carry the source time of the message unchanged, separate from the gateway's own send time.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway
+COMMENT: PR-006.
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-008
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: Common library (COM)
+
+[REQUIREMENT]
+UID: HLR-COM-001
+STATUS: Active
+STATEMENT: >>>
+The library gives a result type holding either a value or an error from a fixed taxonomy, and its own functions report expected errors through it without throwing.
+<<<
+VERIFICATION: Test, Inspection
+VERIFICATION_NOTE: `backend/services/common/tests/result_test.cpp`
+ALLOCATION: common
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-029
+
+[REQUIREMENT]
+UID: HLR-COM-002
+STATUS: Active
+STATEMENT: >>>
+A sequence counter returns 1 on first use and a value one higher on each later call, per counter and per key, safely from several threads.
+<<<
+VERIFICATION: Test
+VERIFICATION_NOTE: `backend/services/common/tests/uuid_sequence_test.cpp`
+ALLOCATION: common
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-024
+
+[REQUIREMENT]
+UID: HLR-COM-003
+STATUS: Active
+STATEMENT: >>>
+The deduplication set reports a key as new the first time it is inserted and as a duplicate when inserted again within the time-to-live.
+<<<
+VERIFICATION: Test
+VERIFICATION_NOTE: `backend/services/common/tests/dedup_jetstream_test.cpp`
+ALLOCATION: common
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-024
+
+[REQUIREMENT]
+UID: HLR-COM-004
+STATUS: Active
+STATEMENT: >>>
+The bus port offers publish, subscribe and acknowledge by stream sequence; the in-memory adapter delivers each published message to subscribers and delivers again a message that was not acknowledged.
+<<<
+VERIFICATION: Test
+VERIFICATION_NOTE: `backend/services/common/tests/dedup_jetstream_test.cpp`
+ALLOCATION: common
+COMMENT: No adapter for a real server yet.
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-024
+
+[REQUIREMENT]
+UID: HLR-COM-005
+STATUS: Active
+STATEMENT: >>>
+The library generates event identifiers in UUID version 7 form that sort by creation time.
+<<<
+VERIFICATION: Test
+VERIFICATION_NOTE: `backend/services/common/tests/uuid_sequence_test.cpp`
+ALLOCATION: common
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-024
+
+[REQUIREMENT]
+UID: HLR-COM-006
+STATUS: Active
+STATEMENT: >>>
+A service using the library answers `GET /healthz` with its aggregated health and `GET /metrics` with its metrics in Prometheus text form.
+<<<
+VERIFICATION: Test
+VERIFICATION_NOTE: `backend/services/common/tests/health_metrics_server_test.cpp`, `metrics_health_test.cpp`
+ALLOCATION: common
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-027
+
+[REQUIREMENT]
+UID: HLR-COM-007
+STATUS: Active
+STATEMENT: >>>
+The logger writes one JSON object per line with the fields of the logging schema and drops lines below the configured level.
+<<<
+VERIFICATION: Test
+VERIFICATION_NOTE: `backend/services/common/tests/logger_test.cpp`; schema in `docs/05_Deployment_Architecture/LOGGING.md`
+ALLOCATION: common
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-027
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: Contracts and bus provisioning (CON)
+
+[REQUIREMENT]
+UID: HLR-CON-001
+STATUS: Active
+STATEMENT: >>>
+The event envelope carries event identifier, payload schema name, per-source sequence, time of occurrence, source service, vehicle identifier, correlation identifier, actor and payload.
+<<<
+VERIFICATION: Inspection
+ALLOCATION: contracts
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-024
+
+[REQUIREMENT]
+UID: HLR-CON-002
+STATUS: Active
+STATEMENT: >>>
+The event envelope carries a simulation flag.
+<<<
+VERIFICATION: Inspection
+ALLOCATION: contracts
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-005
+
+[REQUIREMENT]
+UID: HLR-CON-003
+STATUS: Active
+STATEMENT: >>>
+The command contract returns only a correlation identifier on submission and defines the statuses pending, accepted, rejected and timed out, with timed out distinct from rejected.
+<<<
+VERIFICATION: Inspection
+ALLOCATION: contracts
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-010
+
+[REQUIREMENT]
+UID: HLR-CON-004
+STATUS: Active
+STATEMENT: >>>
+A pull request that fails the contract lint or breaks a published contract fails the build.
+<<<
+VERIFICATION: Test
+VERIFICATION_NOTE: `proto-contract` job in `.github/workflows/pr.yml`
+ALLOCATION: contracts, tools
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-026
+
+[REQUIREMENT]
+UID: HLR-CON-005
+STATUS: Active
+STATEMENT: >>>
+The provisioning script creates the TELEMETRY, EVENTS, COMMANDS, AI and AUDIT streams with file storage on their subjects and leaves an existing stream unchanged.
+<<<
+VERIFICATION: Demonstration
+VERIFICATION_NOTE: `tools/provision-streams.sh`; exercised by `tests/integration/idempotency/`
+ALLOCATION: contracts, tools
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-006
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: Storage schema (STO)
+
+[REQUIREMENT]
+UID: HLR-STO-001
+STATUS: Active
+STATEMENT: >>>
+The database refuses an insert into the audit chain whose previous-hash value is not the hash of the current last entry, and refuses a first entry with a previous-hash value.
+<<<
+VERIFICATION: Test
+VERIFICATION_NOTE: No test was seen; migration `0004_audit.sql`.
+ALLOCATION: storage
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-015
+
+[REQUIREMENT]
+UID: HLR-STO-002
+STATUS: Active
+STATEMENT: >>>
+The role that writes the audit chain has no right to update, delete or truncate it.
+<<<
+VERIFICATION: Test, Inspection
+VERIFICATION_NOTE: No test was seen; migration `0004_audit.sql`.
+ALLOCATION: storage
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-015
+
+[REQUIREMENT]
+UID: HLR-STO-003
+STATUS: Active
+STATEMENT: >>>
+The telemetry schema holds one time-partitioned table per telemetry category, keyed by time.
+<<<
+VERIFICATION: Inspection
+VERIFICATION_NOTE: Migration `0010_telemetry_hypertables.sql`.
+ALLOCATION: storage
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-030
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: Flight-log analysis sidecar (FLA)
+
+[REQUIREMENT]
+UID: HLR-FLA-001
+STATUS: Active
+STATEMENT: >>>
+`POST /v1/analyses` runs the deterministic analyser on a named log from the log library and stores the report; the flight-report routes list the stored reports and return one with its score, findings and parameter sheet.
+<<<
+VERIFICATION: Test
+VERIFICATION_NOTE: Sidecar `tests/test_app.py`, `tests/test_analysis_view.py`
+ALLOCATION: flight-log
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-023
+
+[REQUIREMENT]
+UID: HLR-FLA-002
+STATUS: Active
+STATEMENT: >>>
+The analysis makes no network call, and the hand-back of applied changes to an external analyser is off unless its address is configured.
+<<<
+VERIFICATION: Test, Inspection
+VERIFICATION_NOTE: Sidecar `tests/test_flightmd_client.py`
+ALLOCATION: flight-log
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-018
+
+[REQUIREMENT]
+UID: HLR-FLA-003
+STATUS: Active
+STATEMENT: >>>
+The sidecar only consumes parameter-written events and publishes nothing on command subjects; on an event that carries a recommendation it reports the applied change once.
+<<<
+VERIFICATION: Test, Inspection
+VERIFICATION_NOTE: Sidecar `tests/test_applied_changes.py`
+ALLOCATION: flight-log
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-017
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: Desktop station (GCS)
+
+[REQUIREMENT]
+UID: HLR-GCS-001
+STATUS: Active
+STATEMENT: >>>
+The post-mission panel lists the flight reports served by the analysis sidecar and shows the score and findings of the one selected.
+<<<
+VERIFICATION: Test, Demonstration
+VERIFICATION_NOTE: `frontend/qt-desktop-gcs/tests/flight_report_json_test.cpp` for the parsing
+ALLOCATION: gcs
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-023
+
+[REQUIREMENT]
+UID: HLR-GCS-002
+STATUS: Active
+STATEMENT: >>>
+The map draws its tiles from a local tile file and makes no network request.
+<<<
+VERIFICATION: Test, Inspection
+VERIFICATION_NOTE: `frontend/qt-desktop-gcs/tests/mbtiles_provider_test.cpp`, `slippy_math_test.cpp`
+ALLOCATION: gcs
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-018
+
+[REQUIREMENT]
+UID: HLR-GCS-003
+STATUS: Proposed
+STATEMENT: >>>
+The station shall take vehicle state only from the gateway stream and shall mark a value as old when its source time exceeds the limit of its category, when a gap is reported, or when frames stop.
+<<<
+VERIFICATION: Test
+ALLOCATION: gcs
+COMMENT: PR-001.
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-004
+
+[REQUIREMENT]
+UID: HLR-GCS-004
+STATUS: Proposed
+STATEMENT: >>>
+The station shall show a visible "simulated" mark on every panel whose data has the simulation flag set or is generated locally.
+<<<
+VERIFICATION: Test, Demonstration
+ALLOCATION: gcs
+COMMENT: PR-001.
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-005
+
+[REQUIREMENT]
+UID: HLR-GCS-005
+STATUS: Proposed
+STATEMENT: >>>
+The station shall send vehicle commands only through the gateway and shall show each as pending, accepted, rejected with its reason, or "state unknown"; it shall not change the displayed vehicle state on its own.
+<<<
+VERIFICATION: Test
+ALLOCATION: gcs
+COMMENT: PR-003.
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-010
+
+[REQUIREMENT]
+UID: HLR-GCS-006
+STATUS: Proposed
+STATEMENT: >>>
+The station shall show no text that states readiness, clearance, go or no-go, and shall show a compliance item as verified only when it holds the record that proves it.
+<<<
+VERIFICATION: Inspection
+ALLOCATION: gcs
+COMMENT: PR-002.
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-028
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: Vehicle link (LNK), planned
+
+[REQUIREMENT]
+UID: HLR-LNK-001
+STATUS: Proposed
+STATEMENT: >>>
+The vehicle link shall decode MAVLink v2 from PX4 and ArduPilot into the telemetry contract, publish each category on its subject with source time and per-source sequence, and count and drop frames it cannot decode.
+<<<
+VERIFICATION: Test
+ALLOCATION: vehicle-link
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-001
+
+[REQUIREMENT]
+UID: HLR-LNK-002
+STATUS: Proposed
+STATEMENT: >>>
+The vehicle link shall publish a link-lost event when no heartbeat has arrived for 3 s and a link-restored event on the next heartbeat.
+<<<
+VERIFICATION: Test
+ALLOCATION: vehicle-link
+COMMENT: The timeout logic of `tools/service-template/src/domain/link_monitor.h` is the starting point (PR-012).
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-003
+
+[REQUIREMENT]
+UID: HLR-LNK-003
+STATUS: Proposed
+STATEMENT: >>>
+The vehicle link shall send each admitted command to the one target vehicle, track its acknowledgement with bounded retries, and report accepted, rejected with the autopilot's reason, or timed out.
+<<<
+VERIFICATION: Test
+ALLOCATION: vehicle-link
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-010
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: Vehicle manager (VM), planned
+
+[REQUIREMENT]
+UID: HLR-VM-001
+STATUS: Proposed
+STATEMENT: >>>
+The vehicle manager shall admit a command only from the session holding controlling authority for the vehicle, or an emergency-class command from any authenticated pilot session, and shall reject all others with a reason.
+<<<
+VERIFICATION: Test
+ALLOCATION: vehicle-manager
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-013
+
+[REQUIREMENT]
+UID: HLR-VM-002
+STATUS: Proposed
+STATEMENT: >>>
+The vehicle manager shall publish a command to the vehicle link only after its audit event is acknowledged as stored, and shall write an emergency-class command to a local log when the store is unavailable.
+<<<
+VERIFICATION: Test
+ALLOCATION: vehicle-manager
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-014
+
+[REQUIREMENT]
+UID: HLR-VM-003
+STATUS: Proposed
+STATEMENT: >>>
+The vehicle manager shall refuse a submission without an idempotency key and shall answer a repeated key with the original correlation identifier without publishing the command again.
+<<<
+VERIFICATION: Test
+ALLOCATION: vehicle-manager
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-011
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: Tools (TOOL)
+
+[REQUIREMENT]
+UID: HLR-TOOL-001
+STATUS: Active
+STATEMENT: >>>
+Every pull request runs the repository guards (frozen folders, document links, licences, trace matrix up to date, theme tokens), the builds and tests on x86_64 and ARM64, the station build and a dependency scan.
+<<<
+VERIFICATION: Inspection
+VERIFICATION_NOTE: `.github/workflows/pr.yml`
+ALLOCATION: tools
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-026
+
+[[/SECTION]]

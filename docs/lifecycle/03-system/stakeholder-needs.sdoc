@@ -1,0 +1,134 @@
+[DOCUMENT]
+TITLE: UAOP stakeholder needs
+UID: UAOP-STK
+VERSION: Issue 1
+DATE: 2026-11-21
+OPTIONS:
+  MARKUP: Markdown
+
+[GRAMMAR]
+IMPORT_FROM_FILE: ../02-standards/requirements.sgra
+
+[TEXT]
+STATEMENT: >>>
+What the people around the system need from it. Drawn from the ConOps (`conops.md`) and the personas in `docs/00_Project_Foundation/PRODUCT_REQUIREMENTS.md`. Not yet validated with stakeholders. System requirements (`system-requirements.sdoc`) trace up to these.
+<<<
+
+[[SECTION]]
+TITLE: Remote pilot
+
+[REQUIREMENT]
+UID: STK-001
+STATUS: Active
+TITLE: Truthful vehicle state
+STATEMENT: >>>
+The pilot needs the displayed vehicle state to be current and true, and needs old or simulated data to be shown as such.
+<<<
+SOURCE: ConOps 4.1, 4.3
+
+[REQUIREMENT]
+UID: STK-002
+STATUS: Active
+TITLE: Commands with a known outcome
+STATEMENT: >>>
+The pilot needs a command to reach the intended vehicle once, and to learn whether it was accepted, rejected or is unknown.
+<<<
+SOURCE: ConOps 4.1
+
+[REQUIREMENT]
+UID: STK-003
+STATUS: Active
+TITLE: Failures made obvious
+STATEMENT: >>>
+The pilot needs loss of the vehicle link, or of a platform function, to be shown within seconds.
+<<<
+SOURCE: ConOps 4.2, 4.3
+
+[REQUIREMENT]
+UID: STK-004
+STATUS: Active
+TITLE: One station in control
+STATEMENT: >>>
+The pilot needs to know that only one authorised session can command the vehicle at a time, and that an emergency action is never blocked by that rule.
+<<<
+SOURCE: ConOps 3
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: Safety and compliance officer
+
+[REQUIREMENT]
+UID: STK-005
+STATUS: Active
+TITLE: Tamper-evident record
+STATEMENT: >>>
+The officer needs a complete record of every command, parameter change and flight in which any alteration can be detected.
+<<<
+SOURCE: ConOps 4.5
+
+[REQUIREMENT]
+UID: STK-006
+STATUS: Active
+TITLE: Evidence checked offline
+STATEMENT: >>>
+The officer needs flight evidence that a third party can verify without a network, and that reports findings without stating that an aircraft may fly.
+<<<
+SOURCE: ConOps 4.5
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: Operator and integrator
+
+[REQUIREMENT]
+UID: STK-007
+STATUS: Active
+TITLE: No internet
+STATEMENT: >>>
+The operator needs every function to work with no internet connection.
+<<<
+SOURCE: ConOps 5
+
+[REQUIREMENT]
+UID: STK-008
+STATUS: Active
+TITLE: Both autopilots, and beside another station
+STATEMENT: >>>
+The operator needs the same behaviour with PX4 and ArduPilot, and needs to run UAOP beside another control station without it being able to command.
+<<<
+SOURCE: ConOps 3
+
+[REQUIREMENT]
+UID: STK-009
+STATUS: Active
+TITLE: Stable typed interfaces
+STATEMENT: >>>
+The integrator needs versioned, typed interfaces that do not break between releases.
+<<<
+SOURCE: ConOps 2
+
+[REQUIREMENT]
+UID: STK-010
+STATUS: Active
+TITLE: Post-flight diagnosis that advises only
+STATEMENT: >>>
+The engineer needs a post-flight diagnosis of each log with recommendations, and needs every change to stay a human decision.
+<<<
+SOURCE: ConOps 3, 4.5
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: Assessor
+
+[REQUIREMENT]
+UID: STK-011
+STATUS: Active
+TITLE: Reviewable development
+STATEMENT: >>>
+The assessor needs to trace each behaviour to a requirement and a test, and needs the project to state plainly what is not built or not verified.
+<<<
+SOURCE: ConOps 2
+
+[[/SECTION]]

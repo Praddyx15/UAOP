@@ -1,0 +1,148 @@
+[DOCUMENT]
+TITLE: UAOP safety requirements
+UID: UAOP-SAF
+VERSION: Issue 1
+DATE: 2026-11-21
+OPTIONS:
+  MARKUP: Markdown
+
+[GRAMMAR]
+IMPORT_FROM_FILE: ../02-standards/requirements.sgra
+
+[TEXT]
+STATEMENT: >>>
+What must hold to keep each failure condition of the FHA (`fha.md`) at its class. SOURCE names the failure condition. System requirements (`docs/lifecycle/03-system/system-requirements.sdoc`) trace up to these. Most are Proposed: the functions they protect are not built yet.
+<<<
+
+[[SECTION]]
+TITLE: Vehicle state display
+
+[REQUIREMENT]
+UID: SAF-001
+STATUS: Proposed
+TITLE: Old data is never shown as live
+STATEMENT: >>>
+A displayed vehicle state value older than its staleness limit (limit per category, to be set; 2 s proposed for position and attitude) shall be marked as old and shall not be presented as current.
+<<<
+SOURCE: FC-2.2
+
+[REQUIREMENT]
+UID: SAF-002
+STATUS: Proposed
+TITLE: Simulated data is marked
+STATEMENT: >>>
+Simulated or locally generated vehicle data shall be marked as simulated on every display that shows it and shall be kept out of operational records.
+<<<
+SOURCE: FC-2.3
+
+[REQUIREMENT]
+UID: SAF-003
+STATUS: Proposed
+TITLE: Losses in the stream are explicit
+STATEMENT: >>>
+Every stage between the vehicle link and the display shall make dropped or delayed data explicit to the next stage, and shall carry the time the data was produced at the source.
+<<<
+SOURCE: FC-2.2
+
+[REQUIREMENT]
+UID: SAF-004
+STATUS: Proposed
+TITLE: Link loss is detected and shown
+STATEMENT: >>>
+Loss of the vehicle link shall be detected within 3 s and shown to the pilot within 1 s of detection.
+<<<
+SOURCE: FC-3.1
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: Commanding the vehicle
+
+[REQUIREMENT]
+UID: SAF-005
+STATUS: Proposed
+TITLE: Command integrity
+STATEMENT: >>>
+A command shall be sent only to the one vehicle named in the request, with a kind taken from a closed set; any other request shall be refused before it reaches the vehicle link.
+<<<
+SOURCE: FC-1.2
+
+[REQUIREMENT]
+UID: SAF-006
+STATUS: Proposed
+TITLE: No repeated execution
+STATEMENT: >>>
+A command that is retried or delivered more than once shall be executed at most once.
+<<<
+SOURCE: FC-1.3
+
+[REQUIREMENT]
+UID: SAF-007
+STATUS: Proposed
+TITLE: Outcome is never guessed
+STATEMENT: >>>
+Every command shall end in exactly one of accepted, rejected or timed out, and a timed-out command shall be shown as "state unknown", never as failed or as done.
+<<<
+SOURCE: FC-1.4
+
+[REQUIREMENT]
+UID: SAF-008
+STATUS: Proposed
+TITLE: Only authorised sessions command
+STATEMENT: >>>
+A command shall be admitted only from an authenticated session that holds a commanding role and the controlling authority for that vehicle, except emergency-class commands (return, land) from any authenticated pilot session.
+<<<
+SOURCE: FC-1.5
+
+[REQUIREMENT]
+UID: SAF-009
+STATUS: Proposed
+TITLE: No command without a person
+STATEMENT: >>>
+The system shall send no command, mission or parameter to a vehicle unless a person asked for that action; analysis output shall never send one.
+<<<
+SOURCE: FC-1.6
+
+[REQUIREMENT]
+UID: SAF-010
+STATUS: Proposed
+TITLE: Uploads are validated and read back
+STATEMENT: >>>
+A parameter write shall be checked against type and safe range before sending and confirmed by read-back; a mission or geofence upload shall be verified against what the vehicle holds. A mismatch shall be shown as a failure.
+<<<
+SOURCE: FC-1.7
+
+[REQUIREMENT]
+UID: SAF-011
+STATUS: Active
+TITLE: The vehicle does not depend on UAOP
+STATEMENT: >>>
+Loss or malfunction of any UAOP function shall leave the autopilot able to fly and to run its lost-link action; UAOP shall hold no part of the control loop.
+<<<
+SOURCE: FC-1.1
+COMMENT: Holds by architecture and by assumption A1 of the ConOps.
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: Records and statements
+
+[REQUIREMENT]
+UID: SAF-012
+STATUS: Proposed
+TITLE: Record before action, and emergencies are not blocked
+STATEMENT: >>>
+A command shall be acted on only after its audit record is durably stored, and a failure of the record store shall not block an emergency-class command.
+<<<
+SOURCE: FC-4.1, FC-4.2
+
+[REQUIREMENT]
+UID: SAF-013
+STATUS: Proposed
+TITLE: No go or no-go statement
+STATEMENT: >>>
+No display or record shall state that an aircraft is ready, airworthy, cleared, or go or no-go; the system shall report evidence and rule states only.
+<<<
+SOURCE: FC-5.2
+
+[[/SECTION]]

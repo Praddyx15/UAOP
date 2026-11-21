@@ -1,0 +1,57 @@
+[GRAMMAR]
+ELEMENTS:
+- TAG: SECTION
+  PROPERTIES:
+    IS_COMPOSITE: True
+  FIELDS:
+  - TITLE: UID
+    TYPE: String
+    REQUIRED: False
+  - TITLE: TITLE
+    TYPE: String
+    REQUIRED: True
+- TAG: TEXT
+  FIELDS:
+  - TITLE: UID
+    TYPE: String
+    REQUIRED: False
+  - TITLE: STATEMENT
+    TYPE: String
+    REQUIRED: True
+- TAG: REQUIREMENT
+  FIELDS:
+  - TITLE: UID
+    TYPE: String
+    REQUIRED: True
+  - TITLE: STATUS
+    TYPE: SingleChoice(Proposed, Active, Deleted)
+    REQUIRED: True
+  - TITLE: TITLE
+    TYPE: String
+    REQUIRED: False
+  - TITLE: STATEMENT
+    TYPE: String
+    REQUIRED: True
+  - TITLE: RATIONALE
+    TYPE: String
+    REQUIRED: False
+  - TITLE: SOURCE
+    TYPE: String
+    REQUIRED: False
+  - TITLE: VERIFICATION
+    TYPE: MultipleChoice(Test, Analysis, Inspection, Demonstration)
+    REQUIRED: False
+  - TITLE: VERIFICATION_NOTE
+    TYPE: String
+    REQUIRED: False
+  - TITLE: ALLOCATION
+    TYPE: MultipleChoice(gcs, gateway, common, contracts, vehicle-link, vehicle-manager, telemetry-engine, mission-engine, parameter-engine, compliance-engine, flight-log, bus, storage, tools, autopilot, procedure)
+    REQUIRED: False
+  - TITLE: DERIVED
+    TYPE: SingleChoice(Yes, No)
+    REQUIRED: False
+  - TITLE: COMMENT
+    TYPE: String
+    REQUIRED: False
+  RELATIONS:
+  - TYPE: Parent

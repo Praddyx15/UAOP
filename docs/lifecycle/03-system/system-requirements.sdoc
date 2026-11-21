@@ -1,0 +1,476 @@
+[DOCUMENT]
+TITLE: UAOP system requirements
+UID: UAOP-SYS
+VERSION: Issue 1
+DATE: 2026-11-21
+OPTIONS:
+  MARKUP: Markdown
+
+[GRAMMAR]
+IMPORT_FROM_FILE: ../02-standards/requirements.sgra
+
+[TEXT]
+STATEMENT: >>>
+What the system as a whole must do, allocated to the items of `system-architecture.md`. Each traces up to stakeholder needs (STK) or safety requirements (SAF). Software high-level requirements (`docs/lifecycle/05-requirements/hlr.sdoc`) trace up to these.
+
+Active means some item implements it today, as read from the code; the COMMENT says where it is only partly met. Proposed means it is needed and not built. COMMENT names the product requirement in `docs/00_Project_Foundation/PRODUCT_REQUIREMENTS.md` that the requirement restates, where there is one.
+<<<
+
+[[SECTION]]
+TITLE: Vehicle state
+
+[REQUIREMENT]
+UID: SYS-001
+STATUS: Proposed
+TITLE: MAVLink ingestion
+STATEMENT: >>>
+The system shall receive MAVLink v2 telemetry from PX4 and ArduPilot vehicles over serial, UDP and TCP at 10 Hz full state per vehicle and at least 50 Hz for attitude.
+<<<
+VERIFICATION: Test
+ALLOCATION: vehicle-link
+COMMENT: UAOP-HLR-001. No vehicle link exists in the tree (PR-009).
+RELATIONS:
+- TYPE: Parent
+  VALUE: STK-001
+- TYPE: Parent
+  VALUE: STK-008
+
+[REQUIREMENT]
+UID: SYS-002
+STATUS: Proposed
+TITLE: Vehicle state machine
+STATEMENT: >>>
+The system shall keep one supervised state per vehicle (disconnected, connected, ready, armed, in flight, landing, emergency) and publish every transition as an event.
+<<<
+VERIFICATION: Test
+ALLOCATION: vehicle-manager
+COMMENT: UAOP-HLR-002.
+RELATIONS:
+- TYPE: Parent
+  VALUE: STK-001
+
+[REQUIREMENT]
+UID: SYS-003
+STATUS: Proposed
+TITLE: Link loss detection
+STATEMENT: >>>
+The system shall detect loss of the vehicle link within 3 s of the last heartbeat and show it on the station within 1 s of detection.
+<<<
+VERIFICATION: Test
+ALLOCATION: vehicle-link, gcs
+COMMENT: UAOP-HLR-004. The timeout logic exists only in the service template (`tools/service-template/src/domain/link_monitor.h`); see PR-012.
+RELATIONS:
+- TYPE: Parent
+  VALUE: SAF-004
+- TYPE: Parent
+  VALUE: STK-003
+
+[REQUIREMENT]
+UID: SYS-004
+STATUS: Proposed
+TITLE: Staleness marking
+STATEMENT: >>>
+The station shall mark any displayed vehicle value as old when its source time is older than the staleness limit of its category, and when the stream reports a gap or stops.
+<<<
+VERIFICATION: Test
+ALLOCATION: gcs
+RELATIONS:
+- TYPE: Parent
+  VALUE: SAF-001
+
+[REQUIREMENT]
+UID: SYS-005
+STATUS: Active
+TITLE: Simulation provenance
+STATEMENT: >>>
+Every event shall carry a flag saying whether it comes from simulation, the flag shall survive every stage, and the station shall mark simulated data on every display.
+<<<
+VERIFICATION: Test, Inspection
+ALLOCATION: contracts, gcs
+COMMENT: The flag exists in the event envelope. The display part is not met: the station shows locally generated values with no marking (PR-001).
+RELATIONS:
+- TYPE: Parent
+  VALUE: SAF-002
+
+[REQUIREMENT]
+UID: SYS-006
+STATUS: Active
+TITLE: Telemetry subjects
+STATEMENT: >>>
+Telemetry shall be published on versioned subjects of the form `uaop.telemetry.v1.<vehicle>.<category>` and held in a persistent stream.
+<<<
+VERIFICATION: Test, Inspection
+ALLOCATION: contracts, bus
+COMMENT: Contract and stream provisioning exist; no publisher yet.
+RELATIONS:
+- TYPE: Parent
+  VALUE: STK-001
+- TYPE: Parent
+  VALUE: STK-009
+
+[REQUIREMENT]
+UID: SYS-007
+STATUS: Active
+TITLE: Stream to the station
+STATEMENT: >>>
+The system shall stream telemetry and events to station clients in order per stream, with a per-stream sequence number, an explicit count of messages dropped by rate shaping, and a heartbeat at a fixed interval.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway
+RELATIONS:
+- TYPE: Parent
+  VALUE: SAF-003
+- TYPE: Parent
+  VALUE: STK-001
+
+[REQUIREMENT]
+UID: SYS-008
+STATUS: Proposed
+TITLE: Source time reaches the display
+STATEMENT: >>>
+Every telemetry frame delivered to the station shall carry the time the data was produced at its source, unchanged by intermediate stages.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway, gcs
+COMMENT: Not met: the gateway stamps frames with its own send time (PR-006).
+RELATIONS:
+- TYPE: Parent
+  VALUE: SAF-003
+
+[REQUIREMENT]
+UID: SYS-030
+STATUS: Proposed
+TITLE: Telemetry persistence
+STATEMENT: >>>
+The system shall store all received telemetry at the received rate in the time-series store.
+<<<
+VERIFICATION: Test
+ALLOCATION: telemetry-engine, storage
+COMMENT: UAOP-HLR-030. The schema exists; nothing writes to it.
+RELATIONS:
+- TYPE: Parent
+  VALUE: STK-005
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: Commands
+
+[REQUIREMENT]
+UID: SYS-009
+STATUS: Active
+TITLE: Closed command set, one vehicle
+STATEMENT: >>>
+The system shall accept a vehicle command only when it names one vehicle and one kind from the closed set (arm, disarm, mode, return, take off, land, mission start), and shall refuse any other request.
+<<<
+VERIFICATION: Test
+ALLOCATION: contracts, gateway
+COMMENT: The vehicle identifier is not validated at the gateway (PR-010).
+RELATIONS:
+- TYPE: Parent
+  VALUE: SAF-005
+- TYPE: Parent
+  VALUE: STK-002
+
+[REQUIREMENT]
+UID: SYS-010
+STATUS: Active
+TITLE: Command resolution
+STATEMENT: >>>
+Command submission shall return a correlation identifier at once, and each command shall resolve to accepted, rejected with a reason, or timed out; timed out shall be a distinct state shown as "state unknown".
+<<<
+VERIFICATION: Test
+ALLOCATION: contracts, gateway, vehicle-manager, gcs
+COMMENT: Contract and gateway forwarding exist. Nothing executes or resolves a command yet, and the station's own buttons bypass this path (PR-003).
+RELATIONS:
+- TYPE: Parent
+  VALUE: SAF-007
+- TYPE: Parent
+  VALUE: STK-002
+
+[REQUIREMENT]
+UID: SYS-011
+STATUS: Proposed
+TITLE: Idempotent submission
+STATEMENT: >>>
+A command submitted again with the same idempotency key shall return the original correlation identifier and shall not be executed again.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway, vehicle-manager
+COMMENT: The gateway forwards the key and does nothing else with it (PR-010).
+RELATIONS:
+- TYPE: Parent
+  VALUE: SAF-006
+
+[REQUIREMENT]
+UID: SYS-012
+STATUS: Active
+TITLE: Authentication
+STATEMENT: >>>
+Every interface other than health and login shall require a valid, unexpired, unrevoked token.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway
+COMMENT: UAOP-NFR-010 in part. Met for the REST routes; not met for the WebSocket (PR-004). Login is a development stub (PR-007).
+RELATIONS:
+- TYPE: Parent
+  VALUE: SAF-008
+
+[REQUIREMENT]
+UID: SYS-013
+STATUS: Proposed
+TITLE: Role and controlling authority
+STATEMENT: >>>
+The system shall admit a command only from a session with a commanding role that holds the single controlling authority for the vehicle, shall admit emergency-class commands from any authenticated pilot session, and shall record every change of authority.
+<<<
+VERIFICATION: Test
+ALLOCATION: gateway, vehicle-manager
+COMMENT: UAOP-HLR-005, ADR-0017. No role check is applied today (PR-005).
+RELATIONS:
+- TYPE: Parent
+  VALUE: SAF-008
+- TYPE: Parent
+  VALUE: STK-004
+
+[REQUIREMENT]
+UID: SYS-014
+STATUS: Proposed
+TITLE: Record before action
+STATEMENT: >>>
+The system shall act on a command only after its audit event is durably stored, and shall keep emergency-class commands possible when the bus or the database is down by writing them to a local log that is reconciled later.
+<<<
+VERIFICATION: Test, Analysis
+ALLOCATION: vehicle-manager, compliance-engine, bus
+COMMENT: ADR-0015.
+RELATIONS:
+- TYPE: Parent
+  VALUE: SAF-012
+- TYPE: Parent
+  VALUE: STK-005
+
+[REQUIREMENT]
+UID: SYS-016
+STATUS: Proposed
+TITLE: Observer mode
+STATEMENT: >>>
+In observer mode the system shall receive a forwarded MAVLink stream or imported logs, shall hold no permission to publish on command subjects, and shall still produce capture, audit and evidence records.
+<<<
+VERIFICATION: Test
+ALLOCATION: vehicle-link, bus
+COMMENT: UAOP-HLR-033, ADR-0023.
+RELATIONS:
+- TYPE: Parent
+  VALUE: STK-008
+
+[REQUIREMENT]
+UID: SYS-017
+STATUS: Active
+TITLE: No command without a person
+STATEMENT: >>>
+No item shall send a command, mission or parameter to a vehicle except on a request made by a person through the station or the gateway; analysis items shall have no path to the command subjects.
+<<<
+VERIFICATION: Inspection
+ALLOCATION: flight-log, gateway
+COMMENT: ADR-0012. Holds today because the analysis sidecar only reads events and writes reports.
+RELATIONS:
+- TYPE: Parent
+  VALUE: SAF-009
+- TYPE: Parent
+  VALUE: STK-010
+
+[REQUIREMENT]
+UID: SYS-019
+STATUS: Proposed
+TITLE: Parameter writes
+STATEMENT: >>>
+The system shall check a parameter write against type and safe range, confirm it by acknowledgement and read-back, record old and new value with the actor, and show an unconfirmed write as a failure.
+<<<
+VERIFICATION: Test
+ALLOCATION: parameter-engine
+COMMENT: UAOP-HLR-020, UAOP-HLR-021. Safe-range data exists in `backend/services/parameter-engine/data/`; no engine.
+RELATIONS:
+- TYPE: Parent
+  VALUE: SAF-010
+
+[REQUIREMENT]
+UID: SYS-020
+STATUS: Proposed
+TITLE: Mission and geofence upload
+STATEMENT: >>>
+The system shall upload missions and geofences with retry, verify them by reading back what the vehicle holds, and record the content hash of each upload.
+<<<
+VERIFICATION: Test
+ALLOCATION: mission-engine
+COMMENT: UAOP-HLR-010, UAOP-HLR-012.
+RELATIONS:
+- TYPE: Parent
+  VALUE: SAF-010
+
+[REQUIREMENT]
+UID: SYS-025
+STATUS: Active
+TITLE: Independence from the autopilot
+STATEMENT: >>>
+The system shall hold no part of the vehicle's control loop, and loss of any UAOP item shall leave the autopilot flying and able to run its lost-link action.
+<<<
+VERIFICATION: Analysis
+ALLOCATION: autopilot, procedure
+RELATIONS:
+- TYPE: Parent
+  VALUE: SAF-011
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: Records and evidence
+
+[REQUIREMENT]
+UID: SYS-015
+STATUS: Active
+TITLE: Audit chain
+STATEMENT: >>>
+The audit store shall be append-only with each entry holding the SHA-256 hash of the one before, shall refuse an entry that does not continue the chain, and shall deny update and delete to its writer.
+<<<
+VERIFICATION: Test, Analysis
+ALLOCATION: storage
+COMMENT: UAOP-HLR-042. Schema only; no writer or verifier yet.
+RELATIONS:
+- TYPE: Parent
+  VALUE: STK-005
+
+[REQUIREMENT]
+UID: SYS-021
+STATUS: Proposed
+TITLE: Flight capture
+STATEMENT: >>>
+The system shall capture each flight's log and record its content hash at capture.
+<<<
+VERIFICATION: Test, Analysis
+ALLOCATION: flight-log
+COMMENT: UAOP-HLR-032.
+RELATIONS:
+- TYPE: Parent
+  VALUE: STK-005
+
+[REQUIREMENT]
+UID: SYS-022
+STATUS: Proposed
+TITLE: Evidence bundle
+STATEMENT: >>>
+For each captured flight the system shall produce a signed bundle that names by hash the log, the parameter snapshot, the analysis report, the pre-flight brief if any and the audit extract, and that verifies offline.
+<<<
+VERIFICATION: Test, Analysis
+ALLOCATION: compliance-engine, flight-log
+COMMENT: UAOP-HLR-044.
+RELATIONS:
+- TYPE: Parent
+  VALUE: STK-006
+
+[REQUIREMENT]
+UID: SYS-023
+STATUS: Active
+TITLE: Post-flight analysis
+STATEMENT: >>>
+The system shall analyse a stored flight log with a deterministic analyser, store the scored findings, and show them on the station.
+<<<
+VERIFICATION: Test
+ALLOCATION: flight-log, gcs
+COMMENT: UAOP-HLR-031.
+RELATIONS:
+- TYPE: Parent
+  VALUE: STK-010
+
+[REQUIREMENT]
+UID: SYS-024
+STATUS: Active
+TITLE: Ordered, deduplicated events
+STATEMENT: >>>
+Every event shall carry a unique identifier and a per-source increasing sequence number; delivery shall be at least once, and consumers shall be able to discard duplicates and detect gaps.
+<<<
+VERIFICATION: Test
+ALLOCATION: common, contracts, bus
+COMMENT: UAOP-NFR-012 in part. Only an in-memory bus adapter exists for C++.
+RELATIONS:
+- TYPE: Parent
+  VALUE: STK-005
+- TYPE: Parent
+  VALUE: SAF-006
+
+[REQUIREMENT]
+UID: SYS-028
+STATUS: Proposed
+TITLE: Evidence, not verdicts
+STATEMENT: >>>
+No display, report or bundle shall state that an aircraft is ready, airworthy, cleared, or go or no-go.
+<<<
+VERIFICATION: Inspection
+ALLOCATION: gcs, compliance-engine
+COMMENT: Not met by the station as built (PR-002).
+RELATIONS:
+- TYPE: Parent
+  VALUE: SAF-013
+- TYPE: Parent
+  VALUE: STK-006
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: Platform
+
+[REQUIREMENT]
+UID: SYS-018
+STATUS: Active
+TITLE: Offline operation
+STATEMENT: >>>
+Every function shall work with no internet connection; a feature that uses a network outside the node shall be off unless configured.
+<<<
+VERIFICATION: Demonstration, Inspection
+ALLOCATION: gcs, gateway, flight-log, bus, storage
+COMMENT: UAOP-NFR-001.
+RELATIONS:
+- TYPE: Parent
+  VALUE: STK-007
+
+[REQUIREMENT]
+UID: SYS-026
+STATUS: Active
+TITLE: Contracts only grow
+STATEMENT: >>>
+Interface contracts shall be defined once in `api/proto/`, versioned, and changed only by adding fields; a breaking change shall fail the build.
+<<<
+VERIFICATION: Test
+ALLOCATION: contracts, tools
+RELATIONS:
+- TYPE: Parent
+  VALUE: STK-009
+
+[REQUIREMENT]
+UID: SYS-027
+STATUS: Active
+TITLE: Service health
+STATEMENT: >>>
+Each service shall report its health and metrics on a local endpoint and write structured log lines, so that a failed or degraded function can be detected.
+<<<
+VERIFICATION: Test
+ALLOCATION: common
+COMMENT: UAOP-NFR-004 in part. Nothing yet turns a failed health check into an indication on the station.
+RELATIONS:
+- TYPE: Parent
+  VALUE: STK-003
+
+[REQUIREMENT]
+UID: SYS-029
+STATUS: Active
+TITLE: Errors by value
+STATEMENT: >>>
+Flight-influencing C++ shall report expected errors as values, without exceptions and without dynamic allocation on real-time paths.
+<<<
+RATIONALE: Makes every error path visible to review and test.
+VERIFICATION: Analysis, Test
+ALLOCATION: common
+COMMENT: UAOP-NFR-008, ADR-0013.
+RELATIONS:
+- TYPE: Parent
+  VALUE: STK-011
+
+[[/SECTION]]
